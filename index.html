@@ -56,13 +56,6 @@
     margin-bottom: 3px;
   }
 
-  .subtitle {
-    text-align: center;
-    font-size: 0.58rem;
-    color: var(--text-dim);
-    letter-spacing: 3px;
-  }
-
   #canvas {
     display: block;
     border-left: 1px solid var(--border);
@@ -77,7 +70,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 7px 16px;
-    font-size: 0.72rem;
+    font-size: 0.82rem;
     color: var(--gold);
     letter-spacing: 2px;
     border: 1px solid var(--border);
@@ -88,9 +81,9 @@
     background: var(--bg);
     color: var(--text-dim);
     text-align: center;
-    font-size: 0.56rem;
+    font-size: 0.7rem;
     letter-spacing: 1px;
-    padding: 6px 0 10px;
+    padding: 7px 0 10px;
     border-left: 1px solid var(--border);
     border-right: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
@@ -174,7 +167,6 @@
 <div id="flag-ribbon"><span></span><span></span><span></span></div>
 <div id="header">
   <h1>🗳️ VOTE RUNNER</h1>
-  <div class="subtitle">SA POLITICAL DASH — 2024 EDITION</div>
 </div>
   <canvas id="canvas" width="800" height="280"></canvas>
   <div id="ui-bar">
@@ -183,8 +175,8 @@
     <span id="hi-display">BEST: 0</span>
   </div>
 
-  <div id="instructions">SPACE / TAP to jump &nbsp;|&nbsp; DOUBLE JUMP available &nbsp;|&nbsp; Collect ✉️ ballots, dodge corruption</div>
-  <div id="char-select">
+  <div id="instructions">SPACE / TAP to jump &nbsp;|&nbsp; DOUBLE JUMP available &nbsp;|&nbsp; Collect votes and dodge problems</div>
+  <div id="char-select" style="display:none;">
     <h2>CHOOSE YOUR CANDIDATE</h2>
     <p>SELECT A POLITICIAN TO BEGIN THE CAMPAIGN</p>
     <div class="char-grid" id="char-grid"></div>
@@ -210,41 +202,221 @@ function drawPixelArt(ctx, pixels, x, y, scale) {
 }
 
 // ─── CHARACTERS ───────────────────────────────────────────────────────────────
-const CHARACTERS = [
-  { id:'red',    name:'COMRADE C',    party:'THE WORKERS PARTY',   power:'Double jump boost',   color:'#e74c3c', jumpBoost:1.15, getFrames:(t)=>getRunFrames(t,'#e74c3c','#c0392b','#f1c40f','#222') },
-  { id:'blue',   name:'DA VINCI',     party:'DEMOCRATIC DASH',     power:'Faster speed',         color:'#3498db', speedBoost:1.2, getFrames:(t)=>getRunFrames(t,'#3498db','#2980b9','#ecf0f1','#222') },
-  { id:'green',  name:'MAMA G',       party:'GREEN FUTURE',        power:'Higher jump',          color:'#2ecc71', jumpHeight:1.2, getFrames:(t)=>getRunFrames(t,'#2ecc71','#27ae60','#f39c12','#111') },
-  { id:'purple', name:'THE GENERAL',  party:'PEOPLES COALITION',   power:'Vote magnet',          color:'#9b59b6', voteRadius:80,  getFrames:(t)=>getRunFrames(t,'#9b59b6','#8e44ad','#f5c518','#111') }
-];
 
-function getRunFrames(t, bodyColor, darkColor, skinColor, outlineColor) {
+// Chief ANC — Madiba shirt, green/gold/black, vote magnet
+function getANCFrames(t) {
   const frame = Math.floor(t / 8) % 4;
+  const S = '#2C8A3A'; // ANC green shirt
+  const G = '#D4A017'; // gold collar/pattern
+  const K = '#111';    // black outline
+  const F = '#4A2208'; // deep brown skin
+  const P = '#1A1A1A'; // near-black pants
+
   const body = [
-    [5,0,outlineColor],[6,0,outlineColor],[7,0,outlineColor],[8,0,outlineColor],
-    [4,1,outlineColor],[5,1,skinColor],[6,1,skinColor],[7,1,skinColor],[8,1,skinColor],[9,1,outlineColor],
-    [4,2,outlineColor],[5,2,skinColor],[6,2,'#ff9'],[7,2,skinColor],[8,2,skinColor],[9,2,outlineColor],
-    [4,3,outlineColor],[5,3,skinColor],[6,3,skinColor],[7,3,skinColor],[8,3,skinColor],[9,3,outlineColor],
-    [5,4,outlineColor],[6,4,outlineColor],[7,4,outlineColor],[8,4,outlineColor],
-    [5,5,outlineColor],[6,5,bodyColor],[7,5,bodyColor],[8,5,outlineColor],
-    [4,6,outlineColor],[5,6,bodyColor],[6,6,bodyColor],[7,6,bodyColor],[8,6,bodyColor],[9,6,outlineColor],
-    [4,7,outlineColor],[5,7,bodyColor],[6,7,darkColor],[7,7,darkColor],[8,7,bodyColor],[9,7,outlineColor],
-    [4,8,outlineColor],[5,8,bodyColor],[6,8,bodyColor],[7,8,bodyColor],[8,8,bodyColor],[9,8,outlineColor],
-    [5,9,outlineColor],[6,9,bodyColor],[7,9,bodyColor],[8,9,outlineColor],
+    // Head
+    [5,0,K],[6,0,K],[7,0,K],[8,0,K],
+    [4,1,K],[5,1,F],[6,1,F],[7,1,F],[8,1,F],[9,1,K],
+    [4,2,K],[5,2,F],[6,2,F],[7,2,F],[8,2,F],[9,2,K],
+    [4,3,K],[5,3,F],[6,3,F],[7,3,F],[8,3,F],[9,3,K],
+    [5,4,K],[6,4,K],[7,4,K],[8,4,K],
+    // Madiba shirt — wide collar, pattern stripe
+    [4,5,G],[5,5,G],[6,5,S],[7,5,S],[8,5,G],[9,5,G],
+    [3,6,K],[4,6,S],[5,6,G],[6,6,S],[7,6,S],[8,6,G],[9,6,S],[10,6,K],
+    [3,7,K],[4,7,S],[5,7,S],[6,7,G],[7,7,G],[8,7,S],[9,7,S],[10,7,K],
+    [3,8,K],[4,8,S],[5,8,S],[6,8,S],[7,8,S],[8,8,S],[9,8,S],[10,8,K],
+    [4,9,K],[5,9,S],[6,9,S],[7,9,S],[8,9,S],[9,9,K],
+    // Pants
+    [4,10,K],[5,10,P],[6,10,P],[7,10,P],[8,10,P],[9,10,K],
   ];
+
   const armSets = [
-    [[3,6,outlineColor],[3,7,darkColor],[2,7,outlineColor],[10,7,outlineColor],[10,8,darkColor],[11,8,outlineColor]],
-    [[3,7,outlineColor],[3,8,darkColor],[2,9,outlineColor],[10,6,outlineColor],[10,7,darkColor],[11,6,outlineColor]],
-    [[3,6,outlineColor],[3,7,darkColor],[2,8,outlineColor],[10,7,outlineColor],[10,8,darkColor],[11,9,outlineColor]],
-    [[3,7,outlineColor],[3,6,darkColor],[2,6,outlineColor],[10,8,outlineColor],[10,7,darkColor],[11,7,outlineColor]],
+    [[2,6,K],[3,7,F],[2,8,K],[10,7,K],[11,7,F],[12,8,K]],
+    [[2,7,K],[3,8,F],[2,9,K],[10,6,K],[11,6,F],[12,7,K]],
+    [[2,6,K],[3,7,F],[2,8,K],[10,7,K],[11,8,F],[12,9,K]],
+    [[2,7,K],[3,6,F],[2,6,K],[10,8,K],[11,7,F],[12,7,K]],
   ];
+
   const legSets = [
-    [[5,10,outlineColor],[5,11,darkColor],[5,12,outlineColor],[4,12,outlineColor],[8,10,outlineColor],[8,11,darkColor],[9,11,outlineColor],[9,12,outlineColor]],
-    [[5,10,outlineColor],[4,11,darkColor],[4,12,outlineColor],[3,12,outlineColor],[8,10,outlineColor],[9,11,darkColor],[9,12,outlineColor],[10,12,outlineColor]],
-    [[5,10,outlineColor],[5,11,darkColor],[6,12,outlineColor],[7,12,outlineColor],[8,10,outlineColor],[8,11,darkColor],[7,11,outlineColor],[7,12,outlineColor]],
-    [[5,10,outlineColor],[6,11,darkColor],[6,12,outlineColor],[7,12,outlineColor],[8,10,outlineColor],[7,11,darkColor],[8,11,outlineColor],[8,12,outlineColor]],
+    [[5,11,K],[5,12,P],[5,13,K],[4,13,K],[8,11,K],[8,12,P],[9,12,K],[9,13,K]],
+    [[5,11,K],[4,12,P],[4,13,K],[3,13,K],[8,11,K],[9,12,P],[9,13,K],[10,13,K]],
+    [[5,11,K],[5,12,P],[6,13,K],[7,13,K],[8,11,K],[8,12,P],[7,12,K],[7,13,K]],
+    [[5,11,K],[6,12,P],[6,13,K],[7,13,K],[8,11,K],[7,12,P],[8,12,K],[8,13,K]],
   ];
+
   return [...body, ...armSets[frame], ...legSets[frame]];
 }
+
+// Captain VF — khaki outfit, wide boere hat, orange accents
+function getVFFrames(t) {
+  const frame = Math.floor(t / 8) % 4;
+  const KH = '#C8860A'; // orange VF accent
+  const KK = '#8B7340'; // khaki
+  const KD = '#6B5520'; // dark khaki
+  const K  = '#111';
+  const F  = '#D4A878'; // skin (lighter)
+  const HT = '#5A4010'; // hat brown
+
+  const body = [
+    // Wide boere hat
+    [3,0,HT],[4,0,HT],[5,0,HT],[6,0,HT],[7,0,HT],[8,0,HT],[9,0,HT],[10,0,HT],
+    [4,1,HT],[5,1,KH],[6,1,KH],[7,1,KH],[8,1,KH],[9,1,HT],
+    // Head under hat
+    [4,2,K],[5,2,F],[6,2,F],[7,2,F],[8,2,F],[9,2,K],
+    [4,3,K],[5,3,F],[6,3,F],[7,3,F],[8,3,F],[9,3,K],
+    [5,4,K],[6,4,K],[7,4,K],[8,4,K],
+    // Khaki shirt with orange shoulder stripe
+    [4,5,KH],[5,5,KK],[6,5,KK],[7,5,KK],[8,5,KK],[9,5,KH],
+    [3,6,K],[4,6,KK],[5,6,KD],[6,6,KK],[7,6,KK],[8,6,KD],[9,6,KK],[10,6,K],
+    [3,7,K],[4,7,KK],[5,7,KK],[6,7,KK],[7,7,KK],[8,7,KK],[9,7,KK],[10,7,K],
+    [3,8,K],[4,8,KK],[5,8,KK],[6,8,KK],[7,8,KK],[8,8,KK],[9,8,KK],[10,8,K],
+    [4,9,K],[5,9,KK],[6,9,KK],[7,9,KK],[8,9,KK],[9,9,K],
+    // Khaki pants
+    [4,10,K],[5,10,KD],[6,10,KD],[7,10,KD],[8,10,KD],[9,10,K],
+  ];
+
+  const armSets = [
+    [[2,6,K],[3,7,KK],[2,8,K],[10,7,K],[11,7,KK],[12,8,K]],
+    [[2,7,K],[3,8,KK],[2,9,K],[10,6,K],[11,6,KK],[12,7,K]],
+    [[2,6,K],[3,7,KK],[2,8,K],[10,7,K],[11,8,KK],[12,9,K]],
+    [[2,7,K],[3,6,KK],[2,6,K],[10,8,K],[11,7,KK],[12,7,K]],
+  ];
+
+  const legSets = [
+    [[5,11,K],[5,12,KD],[5,13,K],[4,13,K],[8,11,K],[8,12,KD],[9,12,K],[9,13,K]],
+    [[5,11,K],[4,12,KD],[4,13,K],[3,13,K],[8,11,K],[9,12,KD],[9,13,K],[10,13,K]],
+    [[5,11,K],[5,12,KD],[6,13,K],[7,13,K],[8,11,K],[8,12,KD],[7,12,K],[7,13,K]],
+    [[5,11,K],[6,12,KD],[6,13,K],[7,13,K],[8,11,K],[7,12,KD],[8,12,K],[8,13,K]],
+  ];
+
+  return [...body, ...armSets[frame], ...legSets[frame]];
+}
+
+// Comrade EFF — red beret, red overalls, fist raised
+function getEFFFrames(t) {
+  const frame = Math.floor(t / 8) % 4;
+  const R  = '#CC1A1A'; // EFF red
+  const RD = '#8B0000'; // dark red
+  const K  = '#111';
+  const F  = '#3D1A06'; // rich dark brown skin
+  const BR = '#CC1A1A'; // beret red
+
+  const body = [
+    // Red beret — flat on top, tilted
+    [4,0,BR],[5,0,BR],[6,0,BR],[7,0,BR],[8,0,BR],[9,0,BR],
+    [3,1,BR],[4,1,BR],[5,1,BR],[6,1,BR],[7,1,BR],[8,1,BR],[9,1,K],
+    // Head
+    [4,2,K],[5,2,F],[6,2,F],[7,2,F],[8,2,F],[9,2,K],
+    [4,3,K],[5,3,F],[6,3,F],[7,3,F],[8,3,F],[9,3,K],
+    [5,4,K],[6,4,K],[7,4,K],[8,4,K],
+    // Red overalls — bib top
+    [4,5,K],[5,5,R],[6,5,R],[7,5,R],[8,5,R],[9,5,K],
+    [3,6,K],[4,6,R],[5,6,R],[6,6,RD],[7,6,RD],[8,6,R],[9,6,R],[10,6,K],
+    [3,7,K],[4,7,R],[5,7,R],[6,7,R],[7,7,R],[8,7,R],[9,7,R],[10,7,K],
+    [3,8,K],[4,8,R],[5,8,R],[6,8,R],[7,8,R],[8,8,R],[9,8,R],[10,8,K],
+    [4,9,K],[5,9,R],[6,9,R],[7,9,R],[8,9,R],[9,9,K],
+    [4,10,K],[5,10,RD],[6,10,RD],[7,10,RD],[8,10,RD],[9,10,K],
+  ];
+
+  // EFF raises fist on frame 0 and 2
+  const armSets = [
+    [[2,4,K],[3,5,F],[2,4,K],[2,5,K],[10,7,K],[11,7,R],[12,8,K]],  // fist raised left
+    [[2,7,K],[3,8,R],[2,9,K],[10,6,K],[11,6,R],[12,7,K]],
+    [[2,4,K],[3,5,F],[2,5,K],[10,7,K],[11,8,R],[12,9,K]],           // fist raised again
+    [[2,7,K],[3,6,R],[2,6,K],[10,8,K],[11,7,R],[12,7,K]],
+  ];
+
+  const legSets = [
+    [[5,11,K],[5,12,RD],[5,13,K],[4,13,K],[8,11,K],[8,12,RD],[9,12,K],[9,13,K]],
+    [[5,11,K],[4,12,RD],[4,13,K],[3,13,K],[8,11,K],[9,12,RD],[9,13,K],[10,13,K]],
+    [[5,11,K],[5,12,RD],[6,13,K],[7,13,K],[8,11,K],[8,12,RD],[7,12,K],[7,13,K]],
+    [[5,11,K],[6,12,RD],[6,13,K],[7,13,K],[8,11,K],[7,12,RD],[8,12,K],[8,13,K]],
+  ];
+
+  return [...body, ...armSets[frame], ...legSets[frame]];
+}
+
+// Leader DA — smart blue suit, white shirt, blue tie
+function getDAFrames(t) {
+  const frame = Math.floor(t / 8) % 4;
+  const B  = '#1A5EA8'; // DA blue suit
+  const BD = '#0F3D70'; // dark blue
+  const W  = '#F0F0F0'; // white shirt
+  const TI = '#1A5EA8'; // tie
+  const K  = '#111';
+  const F  = '#D4A878'; // skin
+
+  const body = [
+    // Head — neat, no hat
+    [5,0,K],[6,0,K],[7,0,K],[8,0,K],
+    [4,1,K],[5,1,F],[6,1,F],[7,1,F],[8,1,F],[9,1,K],
+    [4,2,K],[5,2,F],[6,2,F],[7,2,F],[8,2,F],[9,2,K],
+    [4,3,K],[5,3,F],[6,3,F],[7,3,F],[8,3,F],[9,3,K],
+    [5,4,K],[6,4,K],[7,4,K],[8,4,K],
+    // White shirt + blue jacket lapels
+    [4,5,B],[5,5,W],[6,5,W],[7,5,W],[8,5,W],[9,5,B],
+    [3,6,K],[4,6,B],[5,6,W],[6,6,TI],[7,6,TI],[8,6,W],[9,6,B],[10,6,K],
+    [3,7,K],[4,7,B],[5,7,B],[6,7,TI],[7,7,TI],[8,7,B],[9,7,B],[10,7,K],
+    [3,8,K],[4,8,B],[5,8,B],[6,8,BD],[7,8,BD],[8,8,B],[9,8,B],[10,8,K],
+    [4,9,K],[5,9,B],[6,9,B],[7,9,B],[8,9,B],[9,9,K],
+    // Suit trousers
+    [4,10,K],[5,10,BD],[6,10,BD],[7,10,BD],[8,10,BD],[9,10,K],
+  ];
+
+  const armSets = [
+    [[2,6,K],[3,7,B],[2,7,K],[10,7,K],[11,7,B],[12,8,K]],
+    [[2,7,K],[3,8,B],[2,9,K],[10,6,K],[11,6,B],[12,7,K]],
+    [[2,6,K],[3,7,B],[2,8,K],[10,7,K],[11,8,B],[12,9,K]],
+    [[2,7,K],[3,6,B],[2,6,K],[10,8,K],[11,7,B],[12,7,K]],
+  ];
+
+  const legSets = [
+    [[5,11,K],[5,12,BD],[5,13,K],[4,13,K],[8,11,K],[8,12,BD],[9,12,K],[9,13,K]],
+    [[5,11,K],[4,12,BD],[4,13,K],[3,13,K],[8,11,K],[9,12,BD],[9,13,K],[10,13,K]],
+    [[5,11,K],[5,12,BD],[6,13,K],[7,13,K],[8,11,K],[8,12,BD],[7,12,K],[7,13,K]],
+    [[5,11,K],[6,12,BD],[6,13,K],[7,13,K],[8,11,K],[7,12,BD],[8,12,K],[8,13,K]],
+  ];
+
+  return [...body, ...armSets[frame], ...legSets[frame]];
+}
+
+const CHARACTERS = [
+  {
+    id: 'anc',
+    name: 'CHIEF ANC',
+    party: 'AFRICAN NAT. CONGRESS',
+    power: 'Vote magnet',
+    color: '#2C8A3A',
+    voteRadius: 80,
+    getFrames: getANCFrames
+  },
+  {
+    id: 'vf',
+    name: 'CAPTAIN VF',
+    party: 'VRYHEIDSFRONT PLUS',
+    power: 'Higher jump',
+    color: '#C8860A',
+    jumpHeight: 1.25,
+    getFrames: getVFFrames
+  },
+  {
+    id: 'eff',
+    name: 'COMRADE EFF',
+    party: 'ECON. FREEDOM FIGHTERS',
+    power: 'Faster speed',
+    color: '#CC1A1A',
+    speedBoost: 1.2,
+    getFrames: getEFFFrames
+  },
+  {
+    id: 'da',
+    name: 'LEADER DA',
+    party: 'DEMOCRATIC ALLIANCE',
+    power: 'Double jump boost',
+    color: '#1A5EA8',
+    jumpBoost: 1.15,
+    getFrames: getDAFrames
+  }
+];
 
 // ─── DRAW: ENVELOPE (vote collectible) ───────────────────────────────────────
 function drawEnvelope(ctx, x, y, t) {
@@ -728,22 +900,106 @@ let loadsheddingFading = false;  // are we fading back in?
 
 const OBSTACLE_TYPES = ['pothole', 'taxi', 'loadshedding'];
 
-// ─── CHAR SELECT ──────────────────────────────────────────────────────────────
+// ─── CHAR SELECT — drawn on canvas ───────────────────────────────────────────
 function buildCharSelect() {
-  const grid = document.getElementById('char-grid');
-  CHARACTERS.forEach(char => {
-    const card = document.createElement('div');
-    card.className = 'char-card';
-    const previewCanvas = document.createElement('canvas');
-    previewCanvas.width = 160; previewCanvas.height = 80;
-    const pCtx = previewCanvas.getContext('2d');
-    pCtx.imageSmoothingEnabled = false;
-    drawPixelArt(pCtx, char.getFrames(0), 56, 2, 4);
-    card.appendChild(previewCanvas);
-    card.innerHTML += `<div class="char-name">${char.name}</div><div class="char-party">${char.party}</div><div class="char-power">★ ${char.power}</div>`;
-    card.addEventListener('click', () => startGame(char));
-    grid.appendChild(card);
+  // No-op: char select is now drawn on canvas in drawCharSelect()
+}
+
+function drawCharSelect() {
+  const W = 800, H = 280;
+
+  // Dark overlay
+  ctx.fillStyle = '#18181Af8';
+  ctx.fillRect(0, 0, W, H);
+
+  // Title
+  ctx.fillStyle = '#C8941E';
+  ctx.font = 'bold 16px Courier New';
+  ctx.textAlign = 'center';
+  ctx.fillText('WHO HAS YOUR VOTE?', W / 2, 22);
+  ctx.fillStyle = '#555';
+  ctx.font = '10px Courier New';
+  ctx.fillText('CLICK TO SELECT', W / 2, 34);
+
+  // Layout: 4 cards filling the width, thin gaps
+  const gap = 6;
+  const cardW = Math.floor((W - gap * 5) / 4); // ~186px each
+  const cardH = H - 40; // ~240px tall
+  const cy = 38;
+
+  CHARACTERS.forEach((char, i) => {
+    const cx = gap + i * (cardW + gap);
+    const isHovered = charSelectHover === i;
+
+    // Card bg
+    ctx.fillStyle = isHovered ? '#252528' : '#1A1A1E';
+    ctx.strokeStyle = isHovered ? char.color : '#2E2E34';
+    ctx.lineWidth = isHovered ? 2 : 1;
+    ctx.beginPath();
+    ctx.roundRect(cx, cy, cardW, cardH, 3);
+    ctx.fill();
+    ctx.stroke();
+
+    // Top colour bar
+    ctx.fillStyle = char.color + (isHovered ? 'FF' : 'BB');
+    ctx.fillRect(cx + 1, cy + 1, cardW - 2, 5);
+
+    // Sprite — scale 6, centred horizontally, sitting above the text strip
+    const textStripH = 62;
+    const spriteScale = 6;
+    const spriteW = 14 * spriteScale; // ~84px
+    const spriteH = 14 * spriteScale; // ~84px
+    const spriteAreaH = cardH - textStripH - 8;
+    const spriteX = cx + Math.floor((cardW - spriteW) / 2) - 4;
+    const spriteY = cy + 8 + Math.floor((spriteAreaH - spriteH) / 2);
+    drawPixelArt(ctx, char.getFrames(Math.floor(t / 8)), spriteX, spriteY, spriteScale);
+
+    // Text strip at bottom of card
+    const textY = cy + cardH - textStripH;
+
+    // Divider
+    ctx.fillStyle = char.color + '44';
+    ctx.fillRect(cx + 8, textY, cardW - 16, 1);
+
+    // Name
+    ctx.fillStyle = char.color;
+    ctx.font = 'bold 11px Courier New';
+    ctx.textAlign = 'center';
+    ctx.fillText(char.name, cx + cardW / 2, textY + 12);
+
+    // Party
+    ctx.fillStyle = '#888';
+    ctx.font = '9px Courier New';
+    // Split party name across 2 lines
+    const words = char.party.split(' ');
+    const mid = Math.ceil(words.length / 2);
+    ctx.fillText(words.slice(0, mid).join(' '), cx + cardW / 2, textY + 26);
+    ctx.fillText(words.slice(mid).join(' '), cx + cardW / 2, textY + 38);
+
+    // Power
+    ctx.fillStyle = '#4A9880';
+    ctx.font = '9px Courier New';
+    ctx.fillText('★ ' + char.power.toUpperCase(), cx + cardW / 2, textY + 52);
   });
+
+  ctx.textAlign = 'left';
+}
+
+// Track hover for char select
+let charSelectHover = -1;
+
+function getCharSelectIndex(mouseX, mouseY) {
+  const gap = 6;
+  const cardW = Math.floor((800 - gap * 5) / 4);
+  const cardH = 280 - 40;
+  const cy = 38;
+  for (let i = 0; i < 4; i++) {
+    const cx = gap + i * (cardW + gap);
+    if (mouseX >= cx && mouseX <= cx + cardW && mouseY >= cy && mouseY <= cy + cardH) {
+      return i;
+    }
+  }
+  return -1;
 }
 
 // ─── START / RESET ────────────────────────────────────────────────────────────
@@ -901,6 +1157,11 @@ function draw() {
   ctx.clearRect(0, 0, 800, 280);
   drawBackground(ctx, scrollX);
 
+  if (state === 'select') {
+    drawCharSelect();
+    return;
+  }
+
   if (state === 'playing' || state === 'gameover') {
     // Envelopes
     votes.forEach(v => drawEnvelope(ctx, v.x, v.y, t));
@@ -924,7 +1185,7 @@ function draw() {
     if (selectedChar) {
       const animT = state === 'playing' ? t : 0;
       const pixels = selectedChar.getFrames(player.jumping ? 0 : animT);
-      drawPixelArt(ctx, pixels, player.x - 4, player.y - 26, 2);
+      drawPixelArt(ctx, pixels, player.x - 4, player.y - 28, 2);
     }
 
     // Loadshedding darkness overlay — drawn LAST so it covers everything
@@ -968,13 +1229,51 @@ function loop() { update(); draw(); requestAnimationFrame(loop); }
 document.addEventListener('keydown', e => {
   if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); doJump(); }
 });
-canvas.addEventListener('click', doJump);
-canvas.addEventListener('touchstart', e => { e.preventDefault(); doJump(); }, { passive:false });
+canvas.addEventListener('click', (e) => {
+  if (state === 'select') {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
+    const idx = getCharSelectIndex(mx, my);
+    if (idx >= 0) startGame(CHARACTERS[idx]);
+    return;
+  }
+  doJump();
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  if (state !== 'select') return;
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+  charSelectHover = getCharSelectIndex(mx, my);
+  canvas.style.cursor = charSelectHover >= 0 ? 'pointer' : 'default';
+});
+
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (state === 'select') {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const touch = e.touches[0];
+    const mx = (touch.clientX - rect.left) * scaleX;
+    const my = (touch.clientY - rect.top) * scaleY;
+    const idx = getCharSelectIndex(mx, my);
+    if (idx >= 0) startGame(CHARACTERS[idx]);
+    return;
+  }
+  doJump();
+}, { passive: false });
 document.getElementById('retry-btn').addEventListener('click', () => startGame(selectedChar));
 document.getElementById('change-btn').addEventListener('click', () => {
   state = 'select';
+  charSelectHover = -1;
   document.getElementById('game-over').style.display = 'none';
-  document.getElementById('char-select').style.display = 'flex';
 });
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
