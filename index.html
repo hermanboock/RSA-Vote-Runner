@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vote Runner — SA Political Dash</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a0a2e;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  #game-container {
+    position: relative;
+    width: 800px;
+    max-width: 100vw;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 2rem;
+    letter-spacing: 4px;
+    color: #f5c518;
+    text-shadow: 0 0 20px #f5c51888;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    text-align: center;
+    font-size: 0.7rem;
+    color: #aaa;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+
+  #canvas {
+    display: block;
+    border: 2px solid #f5c518;
+    background: #0d1b2a;
+    image-rendering: pixelated;
+    cursor: pointer;
+  }
+
+  #ui-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px;
+    font-size: 0.85rem;
+    color: #f5c518;
+    letter-spacing: 1px;
+  }
+
+  /* CHARACTER SELECT SCREEN */
+  #char-select {
+    position: absolute;
+    inset: 0;
+    background: #0d1b2ae8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+
+  #char-select h2 {
+    font-size: 1.3rem;
+    color: #f5c518;
+    letter-spacing: 3px;
+    margin-bottom: 6px;
+  }
+
+  #char-select p {
+    font-size: 0.65rem;
+    color: #888;
+    letter-spacing: 2px;
+    margin-bottom: 24px;
+  }
+
+  .char-grid {
+    display: flex;
+    gap: 16px;
+  }
+
+  .char-card {
+    width: 140px;
+    background: #12233a;
+    border: 2px solid #333;
+    border-radius: 4px;
+    padding: 16px 10px 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.15s, transform 0.15s;
+    user-select: none;
+  }
+
+  .char-card:hover {
+    border-color: #f5c518;
+    transform: translateY(-3px);
+  }
+
+  .char-card canvas {
+    display: block;
+    margin: 0 auto 10px;
+    image-rendering: pixelated;
+  }
+
+  .char-card .char-name {
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #f5c518;
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+  }
+
+  .char-card .char-party {
+    font-size: 0.6rem;
+    color: #888;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .char-card .char-power {
+    font-size: 0.58rem;
+    color: #5af;
+    letter-spacing: 0.5px;
+  }
+
+  /* GAME OVER */
+  #game-over {
+    position: absolute;
+    inset: 0;
+    background: #0d1b2acc;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+
+  #game-over h2 {
+    font-size: 2rem;
+    color: #e74c3c;
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+  }
+
+  #game-over .final-score {
+    font-size: 1rem;
+    color: #f5c518;
+    margin-bottom: 4px;
+    letter-spacing: 2px;
+  }
+
+  #game-over .high-score {
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 24px;
+    letter-spacing: 1px;
+  }
+
+  .btn {
+    background: #f5c518;
+    color: #1a0a2e;
+    border: none;
+    padding: 10px 28px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    cursor: pointer;
+    border-radius: 2px;
+    margin: 4px;
+  }
+
+  .btn:hover { background: #ffd740; }
+  .btn.secondary { background: transparent; color: #888; border: 1px solid #444; }
+  .btn.secondary:hover { color: #fff; border-color: #888; }
+
+  #instructions {
+    text-align: center;
+    font-size: 0.6rem;
+    color: #555;
+    letter-spacing: 1px;
+    margin-top: 6px;
+  }
+</style>
+</head>
+<body>
+
+<div id="game-container">
+  <h1>🗳️ VOTE RUNNER</h1>
+  <div class="subtitle">SA POLITICAL DASH — 2024 EDITION</div>
+
+  <canvas id="canvas" width="800" height="280"></canvas>
+
+  <div id="ui-bar">
+    <span id="score-display">VOTES: 0</span>
+    <span id="distance-display">DIST: 0m</span>
+    <span id="hi-display">BEST: 0</span>
+  </div>
+
+  <div id="instructions">SPACE / TAP to jump &nbsp;|&nbsp; DOUBLE JUMP available &nbsp;|&nbsp; Collect 🗳️ votes, dodge corruption</div>
+
+  <!-- CHARACTER SELECT -->
+  <div id="char-select">
+    <h2>CHOOSE YOUR CANDIDATE</h2>
+    <p>SELECT A POLITICIAN TO BEGIN THE CAMPAIGN</p>
+    <div class="char-grid" id="char-grid"></div>
+  </div>
+
+  <!-- GAME OVER -->
+  <div id="game-over" id="game-over">
+    <h2>CAMPAIGN OVER</h2>
+    <div class="final-score" id="final-score">VOTES COLLECTED: 0</div>
+    <div class="high-score" id="hi-score-display">BEST: 0</div>
+    <div style="margin-top:8px;">
+      <button class="btn" id="retry-btn">RUN AGAIN</button>
+      <button class="btn secondary" id="change-btn">CHANGE CANDIDATE</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── PIXEL ART RENDERER ───────────────────────────────────────────────────────
+function drawPixelArt(ctx, pixels, x, y, scale) {
+  pixels.forEach(([px, py, color]) => {
+    ctx.fillStyle = color;
+    ctx.fillRect(x + px * scale, y + py * scale, scale, scale);
+  });
+}
+
+// ─── CHARACTER DEFINITIONS ────────────────────────────────────────────────────
+// Each char: name, party, power description, colour scheme, pixel frames
+const CHARACTERS = [
+  {
+    id: 'red',
+    name: 'COMRADE C',
+    party: 'THE WORKERS PARTY',
+    power: 'Double jump boost',
+    color: '#e74c3c',
+    accentColor: '#c0392b',
+    jumpBoost: 1.15,
+    getFrames: (t) => getRunFrames(t, '#e74c3c', '#c0392b', '#f1c40f', '#222')
+  },
+  {
+    id: 'blue',
+    name: 'DA VINCI',
+    party: 'DEMOCRATIC DASH',
+    power: 'Faster speed',
+    color: '#3498db',
+    accentColor: '#2980b9',
+    speedBoost: 1.2,
+    getFrames: (t) => getRunFrames(t, '#3498db', '#2980b9', '#ecf0f1', '#222')
+  },
+  {
+    id: 'green',
+    name: 'MAMA G',
+    party: 'GREEN FUTURE',
+    power: 'Higher jump',
+    color: '#2ecc71',
+    accentColor: '#27ae60',
+    jumpHeight: 1.2,
+    getFrames: (t) => getRunFrames(t, '#2ecc71', '#27ae60', '#f39c12', '#111')
+  },
+  {
+    id: 'purple',
+    name: 'THE GENERAL',
+    party: 'PEOPLES COALITION',
+    power: 'Magnet for votes',
+    color: '#9b59b6',
+    accentColor: '#8e44ad',
+    voteRadius: 80,
+    getFrames: (t) => getRunFrames(t, '#9b59b6', '#8e44ad', '#f5c518', '#111')
+  }
+];
+
+// Pixel art running character (16x16 grid)
+function getRunFrames(t, bodyColor, darkColor, skinColor, outlineColor) {
+  const frame = Math.floor(t / 8) % 4;
+  // Base body pixels [x, y, color]
+  const body = [
+    // Head
+    [5,0,outlineColor],[6,0,outlineColor],[7,0,outlineColor],[8,0,outlineColor],
+    [4,1,outlineColor],[5,1,skinColor],[6,1,skinColor],[7,1,skinColor],[8,1,skinColor],[9,1,outlineColor],
+    [4,2,outlineColor],[5,2,skinColor],[6,2,'#ff9'],[7,2,skinColor],[8,2,skinColor],[9,2,outlineColor],
+    [4,3,outlineColor],[5,3,skinColor],[6,3,skinColor],[7,3,skinColor],[8,3,skinColor],[9,3,outlineColor],
+    [5,4,outlineColor],[6,4,outlineColor],[7,4,outlineColor],[8,4,outlineColor],
+    // Torso
+    [5,5,outlineColor],[6,5,bodyColor],[7,5,bodyColor],[8,5,outlineColor],
+    [4,6,outlineColor],[5,6,bodyColor],[6,6,bodyColor],[7,6,bodyColor],[8,6,bodyColor],[9,6,outlineColor],
+    [4,7,outlineColor],[5,7,bodyColor],[6,7,darkColor],[7,7,darkColor],[8,7,bodyColor],[9,7,outlineColor],
+    [4,8,outlineColor],[5,8,bodyColor],[6,8,bodyColor],[7,8,bodyColor],[8,8,bodyColor],[9,8,outlineColor],
+    [5,9,outlineColor],[6,9,bodyColor],[7,9,bodyColor],[8,9,outlineColor],
+  ];
+
+  // Arm positions per frame
+  const armSets = [
+    [[3,6,outlineColor],[3,7,darkColor],[2,7,outlineColor],[10,7,outlineColor],[10,8,darkColor],[11,8,outlineColor]],
+    [[3,7,outlineColor],[3,8,darkColor],[2,9,outlineColor],[10,6,outlineColor],[10,7,darkColor],[11,6,outlineColor]],
+    [[3,6,outlineColor],[3,7,darkColor],[2,8,outlineColor],[10,7,outlineColor],[10,8,darkColor],[11,9,outlineColor]],
+    [[3,7,outlineColor],[3,6,darkColor],[2,6,outlineColor],[10,8,outlineColor],[10,7,darkColor],[11,7,outlineColor]],
+  ];
+
+  // Leg positions per frame
+  const legSets = [
+    [[5,10,outlineColor],[5,11,darkColor],[5,12,outlineColor],[4,12,outlineColor],[8,10,outlineColor],[8,11,darkColor],[9,11,outlineColor],[9,12,outlineColor]],
+    [[5,10,outlineColor],[4,11,darkColor],[4,12,outlineColor],[3,12,outlineColor],[8,10,outlineColor],[9,11,darkColor],[9,12,outlineColor],[10,12,outlineColor]],
+    [[5,10,outlineColor],[5,11,darkColor],[6,12,outlineColor],[7,12,outlineColor],[8,10,outlineColor],[8,11,darkColor],[7,11,outlineColor],[7,12,outlineColor]],
+    [[5,10,outlineColor],[6,11,darkColor],[6,12,outlineColor],[7,12,outlineColor],[8,10,outlineColor],[7,11,darkColor],[8,11,outlineColor],[8,12,outlineColor]],
+  ];
+
+  return [...body, ...armSets[frame], ...legSets[frame]];
+}
+
+// ─── OBSTACLE PIXEL ART ───────────────────────────────────────────────────────
+function drawObstacle(ctx, type, x, y) {
+  ctx.save();
+  if (type === 'pothole') {
+    // Dark pit with warning stripes
+    ctx.fillStyle = '#111';
+    ctx.fillRect(x, y + 16, 44, 14);
+    ctx.fillStyle = '#e74c3c';
+    for (let i = 0; i < 5; i++) {
+      ctx.fillRect(x + i * 9, y + 14, 5, 4);
+    }
+    ctx.fillStyle = '#f5c518';
+    ctx.font = 'bold 9px Courier New';
+    ctx.fillText('POTHOLE', x + 2, y + 12);
+  } else if (type === 'official') {
+    // Corrupt official — fat blocky figure in a suit
+    const px = x;
+    // Body
+    ctx.fillStyle = '#2c3e50';
+    ctx.fillRect(px + 4, y, 24, 28);
+    // Head
+    ctx.fillStyle = '#f0c080';
+    ctx.fillRect(px + 8, y - 14, 16, 14);
+    // Hat
+    ctx.fillStyle = '#1a252f';
+    ctx.fillRect(px + 6, y - 18, 20, 5);
+    // Briefcase (full of money)
+    ctx.fillStyle = '#8B6914';
+    ctx.fillRect(px + 26, y + 8, 12, 10);
+    ctx.fillStyle = '#f5c518';
+    ctx.fillRect(px + 28, y + 10, 8, 6);
+    // Eyes
+    ctx.fillStyle = '#e74c3c';
+    ctx.fillRect(px + 10, y - 11, 3, 3);
+    ctx.fillRect(px + 18, y - 11, 3, 3);
+    // Label
+    ctx.fillStyle = '#e74c3c';
+    ctx.font = '7px Courier New';
+    ctx.fillText('CORRUPT', px + 1, y + 38);
+  } else if (type === 'loadshedding') {
+    // Generator / electricity pylon
+    ctx.fillStyle = '#e67e22';
+    ctx.fillRect(x + 6, y, 20, 28);
+    ctx.fillStyle = '#f39c12';
+    ctx.fillRect(x + 10, y + 2, 12, 10);
+    // Exhaust smoke
+    ctx.fillStyle = '#555';
+    ctx.fillRect(x + 22, y - 8, 6, 6);
+    ctx.fillRect(x + 24, y - 14, 4, 4);
+    ctx.fillRect(x + 23, y - 20, 5, 4);
+    // Lightning bolt
+    ctx.fillStyle = '#f5c518';
+    ctx.font = 'bold 16px Courier New';
+    ctx.fillText('⚡', x + 2, y + 20);
+    ctx.fillStyle = '#e67e22';
+    ctx.font = '7px Courier New';
+    ctx.fillText('STAGE 6', x + 0, y + 38);
+  }
+  ctx.restore();
+}
+
+// ─── VOTE COLLECTIBLE ─────────────────────────────────────────────────────────
+function drawVote(ctx, x, y, t) {
+  const bob = Math.sin(t * 0.08) * 3;
+  ctx.save();
+  ctx.fillStyle = '#f5c518';
+  ctx.beginPath();
+  ctx.arc(x + 10, y + bob + 10, 10, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#1a0a2e';
+  ctx.font = 'bold 10px Courier New';
+  ctx.textAlign = 'center';
+  ctx.fillText('X', x + 10, y + bob + 14);
+  ctx.restore();
+}
+
+// ─── BACKGROUND ───────────────────────────────────────────────────────────────
+function drawBackground(ctx, scrollX) {
+  // Sky gradient layers
+  ctx.fillStyle = '#0d1b2a';
+  ctx.fillRect(0, 0, 800, 200);
+
+  // Stars
+  ctx.fillStyle = '#ffffff44';
+  const stars = [[50,20],[120,40],[200,15],[350,55],[500,25],[650,45],[750,10],[80,70],[300,35],[420,60]];
+  stars.forEach(([sx, sy]) => {
+    const px = ((sx - scrollX * 0.1) % 800 + 800) % 800;
+    ctx.fillRect(px, sy, 2, 2);
+  });
+
+  // Parliament silhouette in background
+  ctx.fillStyle = '#1a2a3a';
+  const parlX = ((600 - scrollX * 0.05) % 1200 + 1200) % 1200 - 200;
+  ctx.fillRect(parlX, 100, 200, 100);
+  ctx.fillRect(parlX + 80, 80, 40, 20);
+  ctx.fillRect(parlX + 85, 60, 30, 20);
+  ctx.fillRect(parlX + 10, 100, 30, 100);
+  ctx.fillRect(parlX + 160, 100, 30, 100);
+
+  // Distant buildings
+  [0, 300, 600, 900, 1200].forEach(bx => {
+    const bxScroll = ((bx - scrollX * 0.15) % 1500 + 1500) % 1500 - 100;
+    ctx.fillStyle = '#152030';
+    ctx.fillRect(bxScroll, 130, 40, 70);
+    ctx.fillRect(bxScroll + 55, 145, 35, 55);
+    ctx.fillStyle = '#f5c51822';
+    ctx.fillRect(bxScroll + 5, 135, 6, 6);
+    ctx.fillRect(bxScroll + 20, 150, 6, 6);
+  });
+
+  // Ground
+  ctx.fillStyle = '#8B4513';
+  ctx.fillRect(0, 240, 800, 5);
+  ctx.fillStyle = '#654321';
+  ctx.fillRect(0, 245, 800, 35);
+
+  // Ground texture
+  ctx.fillStyle = '#7a3e0f';
+  for (let gx = (-(scrollX * 0.5) % 40 + 40) % 40; gx < 800; gx += 40) {
+    ctx.fillRect(gx, 240, 20, 2);
+  }
+
+  // Road markings
+  ctx.fillStyle = '#ffffff22';
+  for (let rx = (-(scrollX) % 80 + 80) % 80; rx < 800; rx += 80) {
+    ctx.fillRect(rx, 248, 40, 2);
+  }
+}
+
+// ─── GAME STATE ───────────────────────────────────────────────────────────────
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+let state = 'select'; // select | playing | gameover
+let selectedChar = null;
+let score = 0;
+let distance = 0;
+let highScore = parseInt(localStorage.getItem('voterunner_hi') || '0');
+let t = 0; // global tick
+let scrollX = 0;
+let gameSpeed = 3;
+
+// Player
+const GROUND_Y = 210;
+let player = {
+  x: 80, y: GROUND_Y, vy: 0,
+  jumping: false, jumpsLeft: 2,
+  width: 16, height: 16
+};
+
+let obstacles = [];
+let votes = [];
+let particles = [];
+let nextObstacle = 120;
+let nextVote = 60;
+
+const OBSTACLE_TYPES = ['pothole', 'official', 'loadshedding'];
+
+// ─── DRAW CHARACTER SELECT PREVIEWS ──────────────────────────────────────────
+function buildCharSelect() {
+  const grid = document.getElementById('char-grid');
+  CHARACTERS.forEach(char => {
+    const card = document.createElement('div');
+    card.className = 'char-card';
+
+    const previewCanvas = document.createElement('canvas');
+    previewCanvas.width = 160;
+    previewCanvas.height = 80;
+    const pCtx = previewCanvas.getContext('2d');
+    pCtx.imageSmoothingEnabled = false;
+
+    // Draw preview character at scale 4
+    const pixels = char.getFrames(0);
+    drawPixelArt(pCtx, pixels, 56, 2, 4);
+
+    card.appendChild(previewCanvas);
+
+    card.innerHTML += `
+      <div class="char-name">${char.name}</div>
+      <div class="char-party">${char.party}</div>
+      <div class="char-power">★ ${char.power}</div>
+    `;
+
+    card.addEventListener('click', () => startGame(char));
+    grid.appendChild(card);
+  });
+}
+
+// ─── GAME START ───────────────────────────────────────────────────────────────
+function startGame(char) {
+  selectedChar = char;
+  state = 'playing';
+  score = 0;
+  distance = 0;
+  scrollX = 0;
+  gameSpeed = 3;
+  t = 0;
+  obstacles = [];
+  votes = [];
+  particles = [];
+  nextObstacle = 120;
+  nextVote = 60;
+  player.y = GROUND_Y;
+  player.vy = 0;
+  player.jumping = false;
+  player.jumpsLeft = 2;
+
+  document.getElementById('char-select').style.display = 'none';
+  document.getElementById('game-over').style.display = 'none';
+}
+
+// ─── JUMP ─────────────────────────────────────────────────────────────────────
+function doJump() {
+  if (state !== 'playing') return;
+  if (player.jumpsLeft > 0) {
+    let jumpPower = -11;
+    if (selectedChar.jumpBoost) jumpPower *= selectedChar.jumpBoost;
+    if (selectedChar.jumpHeight && player.jumpsLeft === 2) jumpPower *= selectedChar.jumpHeight;
+    player.vy = jumpPower;
+    player.jumpsLeft--;
+    player.jumping = true;
+    spawnParticles(player.x + 8, player.y + 14, '#f5c51888', 5);
+  }
+}
+
+// ─── PARTICLES ────────────────────────────────────────────────────────────────
+function spawnParticles(x, y, color, count) {
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x, y,
+      vx: (Math.random() - 0.5) * 4,
+      vy: (Math.random() - 0.5) * 4 - 2,
+      life: 20,
+      color
+    });
+  }
+}
+
+// ─── GAME OVER ────────────────────────────────────────────────────────────────
+function endGame() {
+  state = 'gameover';
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem('voterunner_hi', highScore);
+  }
+  document.getElementById('final-score').textContent = `VOTES COLLECTED: ${score}`;
+  document.getElementById('hi-score-display').textContent = `BEST: ${highScore}`;
+  document.getElementById('game-over').style.display = 'flex';
+}
+
+// ─── MAIN LOOP ────────────────────────────────────────────────────────────────
+function update() {
+  if (state !== 'playing') return;
+  t++;
+
+  // Speed ramp
+  if (t % 300 === 0) gameSpeed = Math.min(gameSpeed + 0.3, 9);
+  const speed = selectedChar.speedBoost ? gameSpeed * selectedChar.speedBoost : gameSpeed;
+
+  scrollX += speed;
+  distance = Math.floor(scrollX / 10);
+
+  // Player physics
+  player.vy += 0.55; // gravity
+  player.y += player.vy;
+  if (player.y >= GROUND_Y) {
+    player.y = GROUND_Y;
+    player.vy = 0;
+    player.jumping = false;
+    player.jumpsLeft = 2;
+  }
+
+  // Spawn obstacles
+  nextObstacle--;
+  if (nextObstacle <= 0) {
+    const type = OBSTACLE_TYPES[Math.floor(Math.random() * 3)];
+    obstacles.push({ x: 840, type, w: 44, h: type === 'pothole' ? 14 : 28 });
+    nextObstacle = Math.floor(90 / (speed / 3)) + Math.floor(Math.random() * 60);
+  }
+
+  // Spawn votes
+  nextVote--;
+  if (nextVote <= 0) {
+    const voteY = Math.random() < 0.4 ? GROUND_Y - 60 : GROUND_Y - 25;
+    votes.push({ x: 840, y: voteY });
+    nextVote = Math.floor(40 + Math.random() * 40);
+  }
+
+  // Move obstacles
+  obstacles.forEach(ob => ob.x -= speed);
+  obstacles = obstacles.filter(ob => ob.x > -60);
+
+  // Move votes
+  const voteRadius = selectedChar.voteRadius || 30;
+  votes = votes.filter(v => {
+    v.x -= speed;
+    // Magnet: pull towards player if close
+    const dx = (player.x + 8) - (v.x + 10);
+    const dy = (player.y - 8) - (v.y + 10);
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < voteRadius) {
+      v.x += dx * 0.18;
+      v.y += dy * 0.18;
+    }
+    // Collect
+    if (dist < 18) {
+      score++;
+      spawnParticles(v.x + 10, v.y + 10, '#f5c518cc', 8);
+      return false;
+    }
+    return v.x > -30;
+  });
+
+  // Collision with obstacles
+  obstacles.forEach(ob => {
+    const px = player.x + 3, pw = 10;
+    const py = player.y - 14, ph = 14;
+    let ox = ob.x + 4, ow = ob.w - 8;
+    let oy, oh;
+    if (ob.type === 'pothole') {
+      oy = GROUND_Y + 14; oh = 14;
+      // Pothole: only collide if player is on the ground
+      if (player.y >= GROUND_Y - 2) {
+        if (px < ox + ow && px + pw > ox && py + ph > oy - 10) endGame();
+      }
+    } else {
+      oy = GROUND_Y - ob.h; oh = ob.h;
+      if (px < ox + ow && px + pw > ox && py < oy + oh && py + ph > oy) endGame();
+    }
+  });
+
+  // Update particles
+  particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life--; p.vy += 0.1; });
+  particles = particles.filter(p => p.life > 0);
+
+  // Update UI
+  document.getElementById('score-display').textContent = `VOTES: ${score}`;
+  document.getElementById('distance-display').textContent = `DIST: ${distance}m`;
+  document.getElementById('hi-display').textContent = `BEST: ${highScore}`;
+}
+
+function draw() {
+  ctx.clearRect(0, 0, 800, 280);
+  drawBackground(ctx, scrollX);
+
+  if (state === 'playing' || state === 'gameover') {
+    // Draw votes
+    votes.forEach(v => drawVote(ctx, v.x, v.y, t));
+
+    // Draw obstacles
+    obstacles.forEach(ob => {
+      const yOffset = ob.type === 'pothole' ? 0 : ob.h;
+      drawObstacle(ctx, ob.type, ob.x, GROUND_Y - yOffset);
+    });
+
+    // Draw particles
+    particles.forEach(p => {
+      ctx.globalAlpha = p.life / 20;
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
+    });
+    ctx.globalAlpha = 1;
+
+    // Draw player
+    if (selectedChar) {
+      const animT = state === 'playing' ? t : 0;
+      const pixels = selectedChar.getFrames(player.jumping ? 0 : animT);
+      drawPixelArt(ctx, pixels, player.x - 4, player.y - 16, 2);
+    }
+
+    // Distance speed indicator
+    if (state === 'playing') {
+      ctx.fillStyle = '#ffffff33';
+      ctx.font = '10px Courier New';
+      ctx.textAlign = 'right';
+      ctx.fillText(`SPD ${gameSpeed.toFixed(1)}x`, 794, 16);
+      ctx.textAlign = 'left';
+    }
+  }
+}
+
+// ─── LOOP ─────────────────────────────────────────────────────────────────────
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// ─── INPUT ────────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' || e.code === 'ArrowUp') {
+    e.preventDefault();
+    doJump();
+  }
+});
+
+canvas.addEventListener('click', doJump);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); doJump(); }, { passive: false });
+
+document.getElementById('retry-btn').addEventListener('click', () => startGame(selectedChar));
+document.getElementById('change-btn').addEventListener('click', () => {
+  state = 'select';
+  document.getElementById('game-over').style.display = 'none';
+  document.getElementById('char-select').style.display = 'flex';
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+buildCharSelect();
+loop();
+</script>
+</body>
+</html>
