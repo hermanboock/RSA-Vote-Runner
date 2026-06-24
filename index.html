@@ -5,11 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vote Runner — SA Political Dash</title>
 <style>
+  :root {
+    --bg:       #18181A;
+    --surface:  #222226;
+    --surface2: #2A2A2E;
+    --border:   #3A3A40;
+    --gold:     #C8941E;
+    --gold-lt:  #E0AA3A;
+    --text:     #E6E2D8;
+    --text-dim: #7A7870;
+    --green:    #2E7D52;
+    --red:      #A63228;
+    --teal:     #4A9880;
+  }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    background: #1a0a2e;
-    color: #fff;
+    background: var(--bg);
+    color: var(--text);
     font-family: 'Courier New', monospace;
     display: flex;
     flex-direction: column;
@@ -19,207 +33,163 @@
     overflow: hidden;
   }
 
-  #game-container {
-    position: relative;
-    width: 800px;
-    max-width: 100vw;
+  #game-container { position: relative; width: 800px; max-width: 100vw; }
+
+  /* Three-colour SA ribbon — green / gold / red, sits above header */
+  #flag-ribbon { display: flex; height: 3px; }
+  #flag-ribbon span { flex: 1; }
+  #flag-ribbon span:nth-child(1) { background: var(--green); }
+  #flag-ribbon span:nth-child(2) { background: var(--gold); }
+  #flag-ribbon span:nth-child(3) { background: var(--red); }
+
+  #header {
+    background: var(--surface);
+    padding: 13px 0 11px;
+    border-bottom: 1px solid var(--border);
   }
 
   h1 {
     text-align: center;
-    font-size: 2rem;
-    letter-spacing: 4px;
-    color: #f5c518;
-    text-shadow: 0 0 20px #f5c51888;
-    margin-bottom: 4px;
+    font-size: 1.75rem;
+    letter-spacing: 6px;
+    color: var(--gold);
+    margin-bottom: 3px;
   }
 
   .subtitle {
     text-align: center;
-    font-size: 0.7rem;
-    color: #aaa;
-    letter-spacing: 2px;
-    margin-bottom: 16px;
+    font-size: 0.58rem;
+    color: var(--text-dim);
+    letter-spacing: 3px;
   }
 
   #canvas {
     display: block;
-    border: 2px solid #f5c518;
-    background: #0d1b2a;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
     image-rendering: pixelated;
     cursor: pointer;
   }
 
   #ui-bar {
+    background: var(--surface);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 4px;
-    font-size: 0.85rem;
-    color: #f5c518;
-    letter-spacing: 1px;
+    padding: 7px 16px;
+    font-size: 0.72rem;
+    color: var(--gold);
+    letter-spacing: 2px;
+    border: 1px solid var(--border);
+    border-top: none;
   }
 
-  /* CHARACTER SELECT SCREEN */
+  #instructions {
+    background: var(--bg);
+    color: var(--text-dim);
+    text-align: center;
+    font-size: 0.56rem;
+    letter-spacing: 1px;
+    padding: 6px 0 10px;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Character select */
   #char-select {
-    position: absolute;
-    inset: 0;
-    background: #0d1b2ae8;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    position: absolute; inset: 0;
+    background: #18181Af2;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
     z-index: 10;
   }
-
   #char-select h2 {
-    font-size: 1.3rem;
-    color: #f5c518;
-    letter-spacing: 3px;
-    margin-bottom: 6px;
+    font-size: 1.05rem;
+    color: var(--gold);
+    letter-spacing: 4px;
+    margin-bottom: 5px;
   }
-
   #char-select p {
-    font-size: 0.65rem;
-    color: #888;
+    font-size: 0.58rem;
+    color: var(--text-dim);
     letter-spacing: 2px;
-    margin-bottom: 24px;
+    margin-bottom: 22px;
   }
 
-  .char-grid {
-    display: flex;
-    gap: 16px;
-  }
+  .char-grid { display: flex; gap: 12px; }
 
   .char-card {
-    width: 140px;
-    background: #12233a;
-    border: 2px solid #333;
-    border-radius: 4px;
-    padding: 16px 10px 12px;
-    cursor: pointer;
-    text-align: center;
+    width: 138px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 14px 10px 12px;
+    cursor: pointer; text-align: center;
     transition: border-color 0.15s, transform 0.15s;
     user-select: none;
   }
+  .char-card:hover { border-color: var(--gold); transform: translateY(-3px); }
+  .char-card canvas { display: block; margin: 0 auto 10px; image-rendering: pixelated; }
+  .char-card .char-name  { font-size: 0.7rem; font-weight: bold; color: var(--gold); margin-bottom: 3px; letter-spacing: 1px; }
+  .char-card .char-party { font-size: 0.56rem; color: var(--text-dim); letter-spacing: 0.5px; margin-bottom: 6px; }
+  .char-card .char-power { font-size: 0.54rem; color: var(--teal); letter-spacing: 0.5px; }
 
-  .char-card:hover {
-    border-color: #f5c518;
-    transform: translateY(-3px);
-  }
-
-  .char-card canvas {
-    display: block;
-    margin: 0 auto 10px;
-    image-rendering: pixelated;
-  }
-
-  .char-card .char-name {
-    font-size: 0.75rem;
-    font-weight: bold;
-    color: #f5c518;
-    margin-bottom: 4px;
-    letter-spacing: 1px;
-  }
-
-  .char-card .char-party {
-    font-size: 0.6rem;
-    color: #888;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
-  }
-
-  .char-card .char-power {
-    font-size: 0.58rem;
-    color: #5af;
-    letter-spacing: 0.5px;
-  }
-
-  /* GAME OVER */
+  /* Game over */
   #game-over {
-    position: absolute;
-    inset: 0;
-    background: #0d1b2acc;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    position: absolute; inset: 0;
+    background: #18181Adc;
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
     z-index: 10;
   }
-
-  #game-over h2 {
-    font-size: 2rem;
-    color: #e74c3c;
-    letter-spacing: 4px;
-    margin-bottom: 8px;
-  }
-
-  #game-over .final-score {
-    font-size: 1rem;
-    color: #f5c518;
-    margin-bottom: 4px;
-    letter-spacing: 2px;
-  }
-
-  #game-over .high-score {
-    font-size: 0.75rem;
-    color: #888;
-    margin-bottom: 24px;
-    letter-spacing: 1px;
-  }
+  #game-over h2       { font-size: 1.7rem; color: var(--red); letter-spacing: 4px; margin-bottom: 8px; }
+  .final-score        { font-size: 0.9rem; color: var(--gold); margin-bottom: 4px; letter-spacing: 2px; }
+  .high-score         { font-size: 0.68rem; color: var(--text-dim); margin-bottom: 24px; letter-spacing: 1px; }
 
   .btn {
-    background: #f5c518;
-    color: #1a0a2e;
+    background: var(--gold);
+    color: #111;
     border: none;
-    padding: 10px 28px;
+    padding: 9px 26px;
     font-family: 'Courier New', monospace;
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     font-weight: bold;
     letter-spacing: 2px;
     cursor: pointer;
     border-radius: 2px;
     margin: 4px;
   }
-
-  .btn:hover { background: #ffd740; }
-  .btn.secondary { background: transparent; color: #888; border: 1px solid #444; }
-  .btn.secondary:hover { color: #fff; border-color: #888; }
-
-  #instructions {
-    text-align: center;
-    font-size: 0.6rem;
-    color: #555;
-    letter-spacing: 1px;
-    margin-top: 6px;
+  .btn:hover { background: var(--gold-lt); }
+  .btn.secondary {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
   }
+  .btn.secondary:hover { color: var(--text); border-color: #666; }
 </style>
 </head>
 <body>
-
 <div id="game-container">
+<div id="flag-ribbon"><span></span><span></span><span></span></div>
+<div id="header">
   <h1>🗳️ VOTE RUNNER</h1>
   <div class="subtitle">SA POLITICAL DASH — 2024 EDITION</div>
-
+</div>
   <canvas id="canvas" width="800" height="280"></canvas>
-
   <div id="ui-bar">
     <span id="score-display">VOTES: 0</span>
     <span id="distance-display">DIST: 0m</span>
     <span id="hi-display">BEST: 0</span>
   </div>
 
-  <div id="instructions">SPACE / TAP to jump &nbsp;|&nbsp; DOUBLE JUMP available &nbsp;|&nbsp; Collect 🗳️ votes, dodge corruption</div>
-
-  <!-- CHARACTER SELECT -->
+  <div id="instructions">SPACE / TAP to jump &nbsp;|&nbsp; DOUBLE JUMP available &nbsp;|&nbsp; Collect ✉️ ballots, dodge corruption</div>
   <div id="char-select">
     <h2>CHOOSE YOUR CANDIDATE</h2>
     <p>SELECT A POLITICIAN TO BEGIN THE CAMPAIGN</p>
     <div class="char-grid" id="char-grid"></div>
   </div>
-
-  <!-- GAME OVER -->
-  <div id="game-over" id="game-over">
+  <div id="game-over">
     <h2>CAMPAIGN OVER</h2>
     <div class="final-score" id="final-score">VOTES COLLECTED: 0</div>
     <div class="high-score" id="hi-score-display">BEST: 0</div>
@@ -239,215 +209,493 @@ function drawPixelArt(ctx, pixels, x, y, scale) {
   });
 }
 
-// ─── CHARACTER DEFINITIONS ────────────────────────────────────────────────────
-// Each char: name, party, power description, colour scheme, pixel frames
+// ─── CHARACTERS ───────────────────────────────────────────────────────────────
 const CHARACTERS = [
-  {
-    id: 'red',
-    name: 'COMRADE C',
-    party: 'THE WORKERS PARTY',
-    power: 'Double jump boost',
-    color: '#e74c3c',
-    accentColor: '#c0392b',
-    jumpBoost: 1.15,
-    getFrames: (t) => getRunFrames(t, '#e74c3c', '#c0392b', '#f1c40f', '#222')
-  },
-  {
-    id: 'blue',
-    name: 'DA VINCI',
-    party: 'DEMOCRATIC DASH',
-    power: 'Faster speed',
-    color: '#3498db',
-    accentColor: '#2980b9',
-    speedBoost: 1.2,
-    getFrames: (t) => getRunFrames(t, '#3498db', '#2980b9', '#ecf0f1', '#222')
-  },
-  {
-    id: 'green',
-    name: 'MAMA G',
-    party: 'GREEN FUTURE',
-    power: 'Higher jump',
-    color: '#2ecc71',
-    accentColor: '#27ae60',
-    jumpHeight: 1.2,
-    getFrames: (t) => getRunFrames(t, '#2ecc71', '#27ae60', '#f39c12', '#111')
-  },
-  {
-    id: 'purple',
-    name: 'THE GENERAL',
-    party: 'PEOPLES COALITION',
-    power: 'Magnet for votes',
-    color: '#9b59b6',
-    accentColor: '#8e44ad',
-    voteRadius: 80,
-    getFrames: (t) => getRunFrames(t, '#9b59b6', '#8e44ad', '#f5c518', '#111')
-  }
+  { id:'red',    name:'COMRADE C',    party:'THE WORKERS PARTY',   power:'Double jump boost',   color:'#e74c3c', jumpBoost:1.15, getFrames:(t)=>getRunFrames(t,'#e74c3c','#c0392b','#f1c40f','#222') },
+  { id:'blue',   name:'DA VINCI',     party:'DEMOCRATIC DASH',     power:'Faster speed',         color:'#3498db', speedBoost:1.2, getFrames:(t)=>getRunFrames(t,'#3498db','#2980b9','#ecf0f1','#222') },
+  { id:'green',  name:'MAMA G',       party:'GREEN FUTURE',        power:'Higher jump',          color:'#2ecc71', jumpHeight:1.2, getFrames:(t)=>getRunFrames(t,'#2ecc71','#27ae60','#f39c12','#111') },
+  { id:'purple', name:'THE GENERAL',  party:'PEOPLES COALITION',   power:'Vote magnet',          color:'#9b59b6', voteRadius:80,  getFrames:(t)=>getRunFrames(t,'#9b59b6','#8e44ad','#f5c518','#111') }
 ];
 
-// Pixel art running character (16x16 grid)
 function getRunFrames(t, bodyColor, darkColor, skinColor, outlineColor) {
   const frame = Math.floor(t / 8) % 4;
-  // Base body pixels [x, y, color]
   const body = [
-    // Head
     [5,0,outlineColor],[6,0,outlineColor],[7,0,outlineColor],[8,0,outlineColor],
     [4,1,outlineColor],[5,1,skinColor],[6,1,skinColor],[7,1,skinColor],[8,1,skinColor],[9,1,outlineColor],
     [4,2,outlineColor],[5,2,skinColor],[6,2,'#ff9'],[7,2,skinColor],[8,2,skinColor],[9,2,outlineColor],
     [4,3,outlineColor],[5,3,skinColor],[6,3,skinColor],[7,3,skinColor],[8,3,skinColor],[9,3,outlineColor],
     [5,4,outlineColor],[6,4,outlineColor],[7,4,outlineColor],[8,4,outlineColor],
-    // Torso
     [5,5,outlineColor],[6,5,bodyColor],[7,5,bodyColor],[8,5,outlineColor],
     [4,6,outlineColor],[5,6,bodyColor],[6,6,bodyColor],[7,6,bodyColor],[8,6,bodyColor],[9,6,outlineColor],
     [4,7,outlineColor],[5,7,bodyColor],[6,7,darkColor],[7,7,darkColor],[8,7,bodyColor],[9,7,outlineColor],
     [4,8,outlineColor],[5,8,bodyColor],[6,8,bodyColor],[7,8,bodyColor],[8,8,bodyColor],[9,8,outlineColor],
     [5,9,outlineColor],[6,9,bodyColor],[7,9,bodyColor],[8,9,outlineColor],
   ];
-
-  // Arm positions per frame
   const armSets = [
     [[3,6,outlineColor],[3,7,darkColor],[2,7,outlineColor],[10,7,outlineColor],[10,8,darkColor],[11,8,outlineColor]],
     [[3,7,outlineColor],[3,8,darkColor],[2,9,outlineColor],[10,6,outlineColor],[10,7,darkColor],[11,6,outlineColor]],
     [[3,6,outlineColor],[3,7,darkColor],[2,8,outlineColor],[10,7,outlineColor],[10,8,darkColor],[11,9,outlineColor]],
     [[3,7,outlineColor],[3,6,darkColor],[2,6,outlineColor],[10,8,outlineColor],[10,7,darkColor],[11,7,outlineColor]],
   ];
-
-  // Leg positions per frame
   const legSets = [
     [[5,10,outlineColor],[5,11,darkColor],[5,12,outlineColor],[4,12,outlineColor],[8,10,outlineColor],[8,11,darkColor],[9,11,outlineColor],[9,12,outlineColor]],
     [[5,10,outlineColor],[4,11,darkColor],[4,12,outlineColor],[3,12,outlineColor],[8,10,outlineColor],[9,11,darkColor],[9,12,outlineColor],[10,12,outlineColor]],
     [[5,10,outlineColor],[5,11,darkColor],[6,12,outlineColor],[7,12,outlineColor],[8,10,outlineColor],[8,11,darkColor],[7,11,outlineColor],[7,12,outlineColor]],
     [[5,10,outlineColor],[6,11,darkColor],[6,12,outlineColor],[7,12,outlineColor],[8,10,outlineColor],[7,11,darkColor],[8,11,outlineColor],[8,12,outlineColor]],
   ];
-
   return [...body, ...armSets[frame], ...legSets[frame]];
 }
 
-// ─── OBSTACLE PIXEL ART ───────────────────────────────────────────────────────
-function drawObstacle(ctx, type, x, y) {
+// ─── DRAW: ENVELOPE (vote collectible) ───────────────────────────────────────
+function drawEnvelope(ctx, x, y, t) {
+  const bob = Math.sin(t * 0.08) * 3;
+  const ex = Math.round(x), ey = Math.round(y + bob);
   ctx.save();
-  if (type === 'pothole') {
-    // Dark pit with warning stripes
-    ctx.fillStyle = '#111';
-    ctx.fillRect(x, y + 16, 44, 14);
-    ctx.fillStyle = '#e74c3c';
-    for (let i = 0; i < 5; i++) {
-      ctx.fillRect(x + i * 9, y + 14, 5, 4);
-    }
-    ctx.fillStyle = '#f5c518';
-    ctx.font = 'bold 9px Courier New';
-    ctx.fillText('POTHOLE', x + 2, y + 12);
-  } else if (type === 'official') {
-    // Corrupt official — fat blocky figure in a suit
-    const px = x;
-    // Body
-    ctx.fillStyle = '#2c3e50';
-    ctx.fillRect(px + 4, y, 24, 28);
-    // Head
-    ctx.fillStyle = '#f0c080';
-    ctx.fillRect(px + 8, y - 14, 16, 14);
-    // Hat
-    ctx.fillStyle = '#1a252f';
-    ctx.fillRect(px + 6, y - 18, 20, 5);
-    // Briefcase (full of money)
-    ctx.fillStyle = '#8B6914';
-    ctx.fillRect(px + 26, y + 8, 12, 10);
-    ctx.fillStyle = '#f5c518';
-    ctx.fillRect(px + 28, y + 10, 8, 6);
-    // Eyes
-    ctx.fillStyle = '#e74c3c';
-    ctx.fillRect(px + 10, y - 11, 3, 3);
-    ctx.fillRect(px + 18, y - 11, 3, 3);
-    // Label
-    ctx.fillStyle = '#e74c3c';
-    ctx.font = '7px Courier New';
-    ctx.fillText('CORRUPT', px + 1, y + 38);
-  } else if (type === 'loadshedding') {
-    // Generator / electricity pylon
-    ctx.fillStyle = '#e67e22';
-    ctx.fillRect(x + 6, y, 20, 28);
-    ctx.fillStyle = '#f39c12';
-    ctx.fillRect(x + 10, y + 2, 12, 10);
-    // Exhaust smoke
-    ctx.fillStyle = '#555';
-    ctx.fillRect(x + 22, y - 8, 6, 6);
-    ctx.fillRect(x + 24, y - 14, 4, 4);
-    ctx.fillRect(x + 23, y - 20, 5, 4);
-    // Lightning bolt
-    ctx.fillStyle = '#f5c518';
-    ctx.font = 'bold 16px Courier New';
-    ctx.fillText('⚡', x + 2, y + 20);
-    ctx.fillStyle = '#e67e22';
-    ctx.font = '7px Courier New';
-    ctx.fillText('STAGE 6', x + 0, y + 38);
+  // Body
+  ctx.fillStyle = '#f5f0e0';
+  ctx.fillRect(ex, ey, 22, 16);
+  // Envelope flap (V shape via two triangles)
+  ctx.fillStyle = '#ddd8c0';
+  ctx.beginPath();
+  ctx.moveTo(ex, ey);
+  ctx.lineTo(ex + 11, ey + 8);
+  ctx.lineTo(ex + 22, ey);
+  ctx.closePath();
+  ctx.fill();
+  // Outline
+  ctx.strokeStyle = '#b8a060';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(ex, ey, 22, 16);
+  // X crease lines bottom half
+  ctx.beginPath();
+  ctx.moveTo(ex, ey + 16);
+  ctx.lineTo(ex + 11, ey + 8);
+  ctx.lineTo(ex + 22, ey + 16);
+  ctx.strokeStyle = '#b8a06066';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  // Small stamp in top right
+  ctx.fillStyle = '#378243';
+  ctx.fillRect(ex + 15, ey + 3, 5, 4);
+  ctx.restore();
+}
+
+// ─── DRAW: POTHOLE (hole in the ground) ──────────────────────────────────────
+function drawPothole(ctx, x, groundY) {
+  const pw = 50, ph = 18;
+  const px = x, py = groundY;
+  ctx.save();
+  // Dark pit cut into the ground
+  ctx.fillStyle = '#050a0f';
+  ctx.beginPath();
+  ctx.ellipse(px + pw/2, py + 4, pw/2, ph/2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Inner depth shadow
+  ctx.fillStyle = '#0a0505';
+  ctx.beginPath();
+  ctx.ellipse(px + pw/2, py + 6, pw/2 - 6, ph/2 - 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Cracked tarmac edges above the hole
+  ctx.strokeStyle = '#555';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(px + 2, py);
+  ctx.lineTo(px + 8, py - 5);
+  ctx.moveTo(px + pw - 4, py);
+  ctx.lineTo(px + pw - 10, py - 6);
+  ctx.moveTo(px + pw/2 - 6, py);
+  ctx.lineTo(px + pw/2 - 10, py - 7);
+  ctx.stroke();
+  // Hazard stripes just above the hole lip
+  for (let i = 0; i < 5; i++) {
+    ctx.fillStyle = i % 2 === 0 ? '#e74c3c' : '#f5c518';
+    ctx.fillRect(px + i * 10, py - 5, 10, 4);
   }
   ctx.restore();
 }
 
-// ─── VOTE COLLECTIBLE ─────────────────────────────────────────────────────────
-function drawVote(ctx, x, y, t) {
-  const bob = Math.sin(t * 0.08) * 3;
+// ─── DRAW: MINIBUS TAXI ───────────────────────────────────────────────────────
+function drawTaxi(ctx, x, groundY) {
+  const wheelR = 8;
+  const ty = groundY - wheelR * 2 - 38; // body top
+  const bodyY = groundY - wheelR * 2;   // body bottom sits on wheel tops
+  const tx = x;
   ctx.save();
-  ctx.fillStyle = '#f5c518';
+
+  // Shadow
+  ctx.fillStyle = '#00000044';
+  ctx.fillRect(tx + 4, groundY - 2, 62, 5);
+
+  // Body
+  ctx.fillStyle = '#f0ede0';
   ctx.beginPath();
-  ctx.arc(x + 10, y + bob + 10, 10, 0, Math.PI * 2);
+  ctx.roundRect(tx, bodyY - 28, 66, 28, 4);
   ctx.fill();
-  ctx.fillStyle = '#1a0a2e';
-  ctx.font = 'bold 10px Courier New';
+
+  // Roof
+  ctx.fillStyle = '#e0ddd0';
+  ctx.beginPath();
+  ctx.roundRect(tx + 8, bodyY - 42, 46, 14, 3);
+  ctx.fill();
+
+  // Outlines
+  ctx.strokeStyle = '#222';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.roundRect(tx, bodyY - 28, 66, 28, 4); ctx.stroke();
+  ctx.beginPath(); ctx.roundRect(tx + 8, bodyY - 42, 46, 14, 3); ctx.stroke();
+
+  // Windscreen
+  ctx.fillStyle = '#88ccee88';
+  ctx.strokeStyle = '#444'; ctx.lineWidth = 1;
+  ctx.fillRect(tx + 10, bodyY - 40, 16, 10); ctx.strokeRect(tx + 10, bodyY - 40, 16, 10);
+
+  // Rear window
+  ctx.fillRect(tx + 40, bodyY - 40, 12, 10); ctx.strokeRect(tx + 40, bodyY - 40, 12, 10);
+
+  // Side windows
+  ctx.fillStyle = '#88ccee55';
+  ctx.fillRect(tx + 4, bodyY - 24, 14, 10);  ctx.strokeRect(tx + 4, bodyY - 24, 14, 10);
+  ctx.fillRect(tx + 20, bodyY - 24, 14, 10); ctx.strokeRect(tx + 20, bodyY - 24, 14, 10);
+  ctx.fillRect(tx + 36, bodyY - 24, 14, 10); ctx.strokeRect(tx + 36, bodyY - 24, 14, 10);
+
+  // Wheels sitting on groundY
+  ctx.fillStyle = '#222';
+  ctx.beginPath(); ctx.arc(tx + 14, groundY - wheelR, wheelR, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(tx + 52, groundY - wheelR, wheelR, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#888';
+  ctx.beginPath(); ctx.arc(tx + 14, groundY - wheelR, 4, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(tx + 52, groundY - wheelR, 4, 0, Math.PI*2); ctx.fill();
+
+  // TAXI stripe
+  ctx.fillStyle = '#e74c3c';
+  ctx.fillRect(tx + 2, bodyY - 10, 62, 8);
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 7px Courier New';
   ctx.textAlign = 'center';
-  ctx.fillText('X', x + 10, y + bob + 14);
+  ctx.fillText('TAXI', tx + 33, bodyY - 3);
+
+  // Hooting sparks
+  ctx.strokeStyle = '#f5c518'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(tx - 4, bodyY - 26); ctx.lineTo(tx - 9, bodyY - 30); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(tx - 4, bodyY - 20); ctx.lineTo(tx - 11, bodyY - 20); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(tx - 4, bodyY - 14); ctx.lineTo(tx - 8, bodyY - 10); ctx.stroke();
+
+  ctx.restore();
+}
+
+// ─── DRAW: LOADSHEDDING GENERATOR ────────────────────────────────────────────
+function drawGenerator(ctx, x, groundY) {
+  const gx = x;
+  const gh = 32; // generator body height
+  const gy = groundY - gh; // top of body
+  ctx.save();
+  // Body
+  ctx.fillStyle = '#c0531a';
+  ctx.fillRect(gx + 4, gy, 36, gh);
+  ctx.fillStyle = '#e67e22';
+  ctx.fillRect(gx + 6, gy + 2, 32, gh - 8);
+  // Grill slits
+  ctx.fillStyle = '#a04010';
+  for (let i = 0; i < 4; i++) ctx.fillRect(gx + 9, gy + 5 + i * 5, 20, 2);
+  // Exhaust pipe top
+  ctx.fillStyle = '#555';
+  ctx.fillRect(gx + 28, gy - 14, 6, 16);
+  ctx.fillStyle = '#333';
+  ctx.fillRect(gx + 26, gy - 16, 10, 4);
+  // Smoke puffs
+  ctx.fillStyle = '#44444466';
+  ctx.beginPath(); ctx.arc(gx + 31, gy - 20, 5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(gx + 28, gy - 28, 4, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(gx + 33, gy - 34, 3, 0, Math.PI*2); ctx.fill();
+  // Feet sitting on groundY
+  ctx.fillStyle = '#333';
+  ctx.fillRect(gx + 6, groundY - 5, 8, 5);
+  ctx.fillRect(gx + 28, groundY - 5, 8, 5);
+  // Bolt
+  ctx.fillStyle = '#f5c518';
+  ctx.font = 'bold 14px Courier New';
+  ctx.textAlign = 'center';
+  ctx.fillText('⚡', gx + 22, gy + 22);
+  ctx.fillStyle = '#e67e22';
+  ctx.font = '6px Courier New';
+  ctx.fillText('STAGE 6', gx + 22, groundY + 10);
   ctx.restore();
 }
 
 // ─── BACKGROUND ───────────────────────────────────────────────────────────────
+
+function drawTableMountain(ctx, x, y, col) {
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.moveTo(x, y + 80);
+  ctx.lineTo(x + 10, y + 52);
+  ctx.lineTo(x + 30, y + 40);
+  ctx.lineTo(x + 55, y + 34);
+  ctx.lineTo(x + 78, y + 28);
+  ctx.lineTo(x + 92, y + 32);
+  ctx.lineTo(x + 108, y + 38);
+  ctx.lineTo(x + 120, y + 22);
+  ctx.lineTo(x + 142, y + 18);
+  ctx.lineTo(x + 222, y + 18);
+  ctx.lineTo(x + 244, y + 22);
+  ctx.lineTo(x + 262, y + 18);
+  ctx.lineTo(x + 280, y + 20);
+  ctx.lineTo(x + 302, y + 22);
+  ctx.lineTo(x + 318, y + 28);
+  ctx.lineTo(x + 332, y + 16);
+  ctx.lineTo(x + 346, y + 30);
+  ctx.lineTo(x + 362, y + 44);
+  ctx.lineTo(x + 376, y + 58);
+  ctx.lineTo(x + 386, y + 80);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawVoortrekker(ctx, x, y, col) {
+  ctx.fillStyle = col;
+  ctx.fillRect(x,      y + 66, 90, 14);
+  ctx.fillRect(x + 6,  y + 56, 78, 12);
+  ctx.fillRect(x + 12, y + 44, 66, 14);
+  ctx.fillRect(x + 16, y + 14, 58, 32);
+  ctx.fillRect(x + 14, y + 8,  14, 14);
+  ctx.fillRect(x + 62, y + 8,  14, 14);
+  ctx.beginPath();
+  ctx.moveTo(x + 16, y + 14);
+  ctx.lineTo(x + 45, y);
+  ctx.lineTo(x + 74, y + 14);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillRect(x + 14, y + 4, 14, 5);
+  ctx.fillRect(x + 62, y + 4, 14, 5);
+}
+
+function drawUnionBuildings(ctx, x, y, col) {
+  ctx.fillStyle = col;
+  ctx.fillRect(x,       y + 42, 240, 38);
+  ctx.fillStyle = col + '66';
+  for (let i = 0; i < 11; i++) ctx.fillRect(x + 10 + i * 20, y + 36, 7, 46);
+  ctx.fillStyle = col;
+  ctx.fillRect(x,       y + 30, 52, 14);
+  ctx.fillRect(x + 188, y + 30, 52, 14);
+  ctx.fillRect(x + 8,   y + 12, 36, 20);
+  ctx.beginPath(); ctx.arc(x + 26, y + 12, 18, Math.PI, 0); ctx.fill();
+  ctx.fillRect(x + 196, y + 12, 36, 20);
+  ctx.beginPath(); ctx.arc(x + 214, y + 12, 18, Math.PI, 0); ctx.fill();
+  ctx.fillRect(x + 98, y + 60, 44, 18);
+}
+
+function drawCtStadium(ctx, x, y, col) {
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.ellipse(x + 56, y + 62, 56, 18, 0, 0, Math.PI);
+  ctx.fill();
+  ctx.fillRect(x,      y + 44, 112, 20);
+  ctx.fillRect(x,      y + 28,  14, 34);
+  ctx.fillRect(x + 98, y + 28,  14, 34);
+  ctx.strokeStyle = col;
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.arc(x + 56, y + 30, 53, Math.PI * 1.14, Math.PI * 1.86);
+  ctx.stroke();
+  ctx.lineWidth = 1;
+  ctx.fillStyle = col;
+  ctx.fillRect(x + 6,   y + 10, 4, 20);
+  ctx.fillRect(x + 102, y + 10, 4, 20);
+  ctx.fillRect(x + 4,   y + 8,  14, 4);
+  ctx.fillRect(x + 98,  y + 8,  14, 4);
+}
+
+function drawHillbrowTower(ctx, x, y, col) {
+  ctx.fillStyle = col;
+  ctx.fillRect(x + 2,  y + 56, 32, 44);
+  ctx.fillRect(x + 14, y + 44, 18, 14);
+  ctx.fillRect(x + 18, y + 8,  10, 38);
+  ctx.fillRect(x + 12, y + 4,  22, 8);
+  ctx.fillRect(x + 21, y,       4,  6);
+  ctx.strokeStyle = col;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(x + 23, y + 6, 8, Math.PI * 1.1, Math.PI * 1.9);
+  ctx.stroke();
+  ctx.lineWidth = 1;
+}
+
+function drawDrakensberg(ctx, x, y, col) {
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.moveTo(x, y + 70);
+  ctx.lineTo(x + 16, y + 48);
+  ctx.lineTo(x + 32, y + 56);
+  ctx.lineTo(x + 52, y + 28);
+  ctx.lineTo(x + 70, y + 42);
+  ctx.lineTo(x + 82, y + 18);
+  ctx.lineTo(x + 98, y + 36);
+  ctx.lineTo(x + 112, y + 22);
+  ctx.lineTo(x + 130, y + 40);
+  ctx.lineTo(x + 142, y + 28);
+  ctx.lineTo(x + 158, y + 44);
+  ctx.lineTo(x + 170, y + 32);
+  ctx.lineTo(x + 184, y + 50);
+  ctx.lineTo(x + 200, y + 70);
+  ctx.closePath();
+  ctx.fill();
+}
+
 function drawBackground(ctx, scrollX) {
-  // Sky gradient layers
-  ctx.fillStyle = '#0d1b2a';
-  ctx.fillRect(0, 0, 800, 200);
+  // Sky — warm SA golden hour
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, 240);
+  skyGrad.addColorStop(0,    '#28385E');
+  skyGrad.addColorStop(0.42, '#4A5E8A');
+  skyGrad.addColorStop(0.76, '#A86E44');
+  skyGrad.addColorStop(1,    '#BE8050');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, 800, 240);
 
-  // Stars
-  ctx.fillStyle = '#ffffff44';
-  const stars = [[50,20],[120,40],[200,15],[350,55],[500,25],[650,45],[750,10],[80,70],[300,35],[420,60]];
-  stars.forEach(([sx, sy]) => {
-    const px = ((sx - scrollX * 0.1) % 800 + 800) % 800;
-    ctx.fillRect(px, sy, 2, 2);
+  // Sun glow
+  ctx.save();
+  const sunGlow = ctx.createRadialGradient(655, 202, 0, 655, 202, 95);
+  sunGlow.addColorStop(0,   '#ECA83050');
+  sunGlow.addColorStop(0.4, '#ECA83018');
+  sunGlow.addColorStop(1,   '#ECA83000');
+  ctx.fillStyle = sunGlow;
+  ctx.fillRect(565, 130, 185, 112);
+  ctx.restore();
+
+  // Sun disc
+  ctx.fillStyle = '#E8A028';
+  ctx.beginPath(); ctx.arc(655, 200, 19, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#F8C055';
+  ctx.beginPath(); ctx.arc(655, 200, 11, 0, Math.PI * 2); ctx.fill();
+
+  // Clouds
+  [[48,36,0.05],[278,26,0.04],[528,40,0.03],[725,30,0.06]].forEach(([cx,cy,spd]) => {
+    const bx = ((cx - scrollX * spd) % 1000 + 1000) % 1000 - 100;
+    ctx.fillStyle = '#788AAA40';
+    ctx.beginPath(); ctx.arc(bx,      cy,     24, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(bx + 30, cy - 8, 18, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(bx + 54, cy,     21, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(bx + 22, cy + 6, 15, 0, Math.PI*2); ctx.fill();
   });
 
-  // Parliament silhouette in background
-  ctx.fillStyle = '#1a2a3a';
-  const parlX = ((600 - scrollX * 0.05) % 1200 + 1200) % 1200 - 200;
-  ctx.fillRect(parlX, 100, 200, 100);
-  ctx.fillRect(parlX + 80, 80, 40, 20);
-  ctx.fillRect(parlX + 85, 60, 30, 20);
-  ctx.fillRect(parlX + 10, 100, 30, 100);
-  ctx.fillRect(parlX + 160, 100, 30, 100);
-
-  // Distant buildings
-  [0, 300, 600, 900, 1200].forEach(bx => {
-    const bxScroll = ((bx - scrollX * 0.15) % 1500 + 1500) % 1500 - 100;
-    ctx.fillStyle = '#152030';
-    ctx.fillRect(bxScroll, 130, 40, 70);
-    ctx.fillRect(bxScroll + 55, 145, 35, 55);
-    ctx.fillStyle = '#f5c51822';
-    ctx.fillRect(bxScroll + 5, 135, 6, 6);
-    ctx.fillRect(bxScroll + 20, 150, 6, 6);
+  // LAYER 1 — Table Mountain: very far, barely scrolls
+  [0, 580, 1160].forEach(baseX => {
+    const tx = ((baseX - scrollX * 0.02) % 1400 + 1400) % 1400 - 400;
+    drawTableMountain(ctx, tx, 142, '#1C2C3E');
   });
 
-  // Ground
-  ctx.fillStyle = '#8B4513';
-  ctx.fillRect(0, 240, 800, 5);
-  ctx.fillStyle = '#654321';
-  ctx.fillRect(0, 245, 800, 35);
+  // LAYER 2 — Drakensberg: mid-far
+  [0, 480, 960].forEach(baseX => {
+    const dx = ((baseX - scrollX * 0.05) % 1050 + 1050) % 1050 - 210;
+    drawDrakensberg(ctx, dx, 160, '#1A2E24');
+  });
 
-  // Ground texture
-  ctx.fillStyle = '#7a3e0f';
-  for (let gx = (-(scrollX * 0.5) % 40 + 40) % 40; gx < 800; gx += 40) {
-    ctx.fillRect(gx, 240, 20, 2);
+  // LAYER 3 — Landmark sequence cycling through
+  const landmarks = [
+    { fn: drawUnionBuildings, yOff: 160 },
+    { fn: drawHillbrowTower,  yOff: 168 },
+    { fn: drawVoortrekker,    yOff: 166 },
+    { fn: drawCtStadium,      yOff: 170 },
+  ];
+  const lmSpacing = 340;
+  const lmTotal = lmSpacing * landmarks.length;
+  const lmCol = '#142018';
+  for (let i = 0; i < 6; i++) {
+    const lm = landmarks[i % landmarks.length];
+    const baseX = i * lmSpacing;
+    const lx = ((baseX - scrollX * 0.10) % lmTotal + lmTotal) % lmTotal - 280;
+    lm.fn(ctx, lx, lm.yOff, lmCol);
   }
 
-  // Road markings
-  ctx.fillStyle = '#ffffff22';
+  // LAYER 4 — Generic city fill
+  [0,220,440,660,880].forEach(bx => {
+    const bxs = ((bx - scrollX * 0.18) % 1100 + 1100) % 1100 - 80;
+    ctx.fillStyle = '#101A14';
+    ctx.fillRect(bxs,       186, 30, 54);
+    ctx.fillRect(bxs + 42,  193, 22, 47);
+    ctx.fillRect(bxs + 74,  188, 26, 52);
+    ctx.fillStyle = '#C8941E2A';
+    ctx.fillRect(bxs + 4,   191, 6, 5);
+    ctx.fillRect(bxs + 15,  201, 6, 5);
+    ctx.fillRect(bxs + 45,  197, 5, 4);
+    ctx.fillRect(bxs + 78,  194, 5, 4);
+  });
+
+  // TARMAC
+  ctx.fillStyle = '#2E2E2E';
+  ctx.fillRect(0, 240, 800, 40);
+  ctx.fillStyle = '#363636';
+  ctx.fillRect(0, 241, 800, 37);
+
+  ctx.fillStyle = '#2A2A2A';
+  [20,160,300,460,580,720].forEach(px => {
+    const spx = ((px - scrollX * 0.95) % 800 + 800) % 800;
+    ctx.fillRect(spx, 244, 44, 7);
+  });
+
+  ctx.strokeStyle = '#222';
+  ctx.lineWidth = 1;
+  [[18,244,36,250],[88,247,110,243],[176,251,195,246],[258,244,280,252],
+   [334,249,356,245],[428,242,444,249],[507,248,528,243],[597,245,617,251],
+   [674,250,698,245],[46,254,66,259],[146,256,163,251],[307,254,323,259]
+  ].forEach(([x1,y1,x2,y2]) => {
+    [-800, 0, 800].forEach(offset => {
+      const ox = (-(scrollX * 0.85) % 800 + 800) % 800;
+      ctx.beginPath();
+      ctx.moveTo(x1 + ox + offset, y1);
+      ctx.lineTo(x2 + ox + offset, y2);
+      ctx.stroke();
+    });
+  });
+
+  ctx.fillStyle = '#FFFFFF16';
   for (let rx = (-(scrollX) % 80 + 80) % 80; rx < 800; rx += 80) {
-    ctx.fillRect(rx, 248, 40, 2);
+    ctx.fillRect(rx, 258, 42, 3);
+  }
+
+  ctx.fillStyle = '#C8941E44';
+  ctx.fillRect(0, 240, 800, 2);
+
+  ctx.fillStyle = '#382C1A';
+  ctx.fillRect(0, 268, 800, 12);
+  ctx.fillStyle = '#40321E';
+  for (let gx = (-(scrollX * 0.55) % 34 + 34) % 34; gx < 800; gx += 34) {
+    ctx.fillRect(gx, 270, 16, 2);
+    ctx.fillRect(gx + 10, 274, 12, 2);
+  }
+}
+// ─── LOADSHEDDING DARKNESS OVERLAY ───────────────────────────────────────────
+function drawLoadsheddingOverlay(ctx, alpha, playerX, playerY) {
+  if (alpha <= 0) return;
+  // Full dark overlay
+  ctx.save();
+  ctx.globalAlpha = alpha * 0.92;
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, 800, 280);
+  ctx.globalAlpha = 1;
+
+  // Cut out a small torch-cone of visibility around the player
+  const cx = playerX + 16, cy = playerY - 8;
+  const visRadius = Math.round(60 + (1 - alpha) * 80); // shrinks as darkness deepens
+  const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, visRadius);
+  gradient.addColorStop(0,    `rgba(0,0,0,0)`);
+  gradient.addColorStop(0.55, `rgba(0,0,0,0)`);
+  gradient.addColorStop(1,    `rgba(0,0,0,${alpha * 0.92})`);
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(cx, cy, visRadius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.restore();
+
+  // Flicker edge when first hitting
+  if (alpha < 0.5) {
+    ctx.save();
+    ctx.globalAlpha = (0.5 - alpha) * 0.6 * (Math.random() > 0.5 ? 1 : 0);
+    ctx.fillStyle = '#fff8dc';
+    ctx.fillRect(0, 0, 800, 280);
+    ctx.restore();
   }
 }
 
@@ -455,22 +703,17 @@ function drawBackground(ctx, scrollX) {
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
-let state = 'select'; // select | playing | gameover
+let state = 'select';
 let selectedChar = null;
 let score = 0;
 let distance = 0;
 let highScore = parseInt(localStorage.getItem('voterunner_hi') || '0');
-let t = 0; // global tick
+let t = 0;
 let scrollX = 0;
 let gameSpeed = 3;
 
-// Player
-const GROUND_Y = 210;
-let player = {
-  x: 80, y: GROUND_Y, vy: 0,
-  jumping: false, jumpsLeft: 2,
-  width: 16, height: 16
-};
+const GROUND_Y = 240;
+let player = { x:80, y:GROUND_Y, vy:0, jumping:false, jumpsLeft:2 };
 
 let obstacles = [];
 let votes = [];
@@ -478,57 +721,40 @@ let particles = [];
 let nextObstacle = 120;
 let nextVote = 60;
 
-const OBSTACLE_TYPES = ['pothole', 'official', 'loadshedding'];
+// Loadshedding state
+let loadsheddingAlpha = 0;       // 0 = full light, 1 = max darkness
+let loadsheddingTimer = 0;       // counts down while active
+let loadsheddingFading = false;  // are we fading back in?
 
-// ─── DRAW CHARACTER SELECT PREVIEWS ──────────────────────────────────────────
+const OBSTACLE_TYPES = ['pothole', 'taxi', 'loadshedding'];
+
+// ─── CHAR SELECT ──────────────────────────────────────────────────────────────
 function buildCharSelect() {
   const grid = document.getElementById('char-grid');
   CHARACTERS.forEach(char => {
     const card = document.createElement('div');
     card.className = 'char-card';
-
     const previewCanvas = document.createElement('canvas');
-    previewCanvas.width = 160;
-    previewCanvas.height = 80;
+    previewCanvas.width = 160; previewCanvas.height = 80;
     const pCtx = previewCanvas.getContext('2d');
     pCtx.imageSmoothingEnabled = false;
-
-    // Draw preview character at scale 4
-    const pixels = char.getFrames(0);
-    drawPixelArt(pCtx, pixels, 56, 2, 4);
-
+    drawPixelArt(pCtx, char.getFrames(0), 56, 2, 4);
     card.appendChild(previewCanvas);
-
-    card.innerHTML += `
-      <div class="char-name">${char.name}</div>
-      <div class="char-party">${char.party}</div>
-      <div class="char-power">★ ${char.power}</div>
-    `;
-
+    card.innerHTML += `<div class="char-name">${char.name}</div><div class="char-party">${char.party}</div><div class="char-power">★ ${char.power}</div>`;
     card.addEventListener('click', () => startGame(char));
     grid.appendChild(card);
   });
 }
 
-// ─── GAME START ───────────────────────────────────────────────────────────────
+// ─── START / RESET ────────────────────────────────────────────────────────────
 function startGame(char) {
   selectedChar = char;
   state = 'playing';
-  score = 0;
-  distance = 0;
-  scrollX = 0;
-  gameSpeed = 3;
-  t = 0;
-  obstacles = [];
-  votes = [];
-  particles = [];
-  nextObstacle = 120;
-  nextVote = 60;
-  player.y = GROUND_Y;
-  player.vy = 0;
-  player.jumping = false;
-  player.jumpsLeft = 2;
-
+  score = 0; distance = 0; scrollX = 0; gameSpeed = 3; t = 0;
+  obstacles = []; votes = []; particles = [];
+  nextObstacle = 120; nextVote = 60;
+  player.y = GROUND_Y; player.vy = 0; player.jumping = false; player.jumpsLeft = 2;
+  loadsheddingAlpha = 0; loadsheddingTimer = 0; loadsheddingFading = false;
   document.getElementById('char-select').style.display = 'none';
   document.getElementById('game-over').style.display = 'none';
 }
@@ -550,134 +776,143 @@ function doJump() {
 // ─── PARTICLES ────────────────────────────────────────────────────────────────
 function spawnParticles(x, y, color, count) {
   for (let i = 0; i < count; i++) {
-    particles.push({
-      x, y,
-      vx: (Math.random() - 0.5) * 4,
-      vy: (Math.random() - 0.5) * 4 - 2,
-      life: 20,
-      color
-    });
+    particles.push({ x, y, vx:(Math.random()-0.5)*4, vy:(Math.random()-0.5)*4-2, life:20, color });
   }
 }
 
 // ─── GAME OVER ────────────────────────────────────────────────────────────────
 function endGame() {
   state = 'gameover';
-  if (score > highScore) {
-    highScore = score;
-    localStorage.setItem('voterunner_hi', highScore);
-  }
+  if (score > highScore) { highScore = score; localStorage.setItem('voterunner_hi', highScore); }
   document.getElementById('final-score').textContent = `VOTES COLLECTED: ${score}`;
   document.getElementById('hi-score-display').textContent = `BEST: ${highScore}`;
   document.getElementById('game-over').style.display = 'flex';
 }
 
-// ─── MAIN LOOP ────────────────────────────────────────────────────────────────
+// ─── UPDATE ───────────────────────────────────────────────────────────────────
 function update() {
   if (state !== 'playing') return;
   t++;
-
-  // Speed ramp
   if (t % 300 === 0) gameSpeed = Math.min(gameSpeed + 0.3, 9);
   const speed = selectedChar.speedBoost ? gameSpeed * selectedChar.speedBoost : gameSpeed;
-
   scrollX += speed;
   distance = Math.floor(scrollX / 10);
 
-  // Player physics
-  player.vy += 0.55; // gravity
+  // Physics
+  player.vy += 0.55;
   player.y += player.vy;
   if (player.y >= GROUND_Y) {
-    player.y = GROUND_Y;
-    player.vy = 0;
-    player.jumping = false;
-    player.jumpsLeft = 2;
+    player.y = GROUND_Y; player.vy = 0; player.jumping = false; player.jumpsLeft = 2;
   }
 
   // Spawn obstacles
   nextObstacle--;
   if (nextObstacle <= 0) {
-    const type = OBSTACLE_TYPES[Math.floor(Math.random() * 3)];
-    obstacles.push({ x: 840, type, w: 44, h: type === 'pothole' ? 14 : 28 });
+    const type = OBSTACLE_TYPES[Math.floor(Math.random() * OBSTACLE_TYPES.length)];
+    const w = type === 'pothole' ? 50 : type === 'taxi' ? 66 : 44;
+    const h = type === 'pothole' ? 18 : type === 'taxi' ? 38 : 32;
+    obstacles.push({ x:840, type, w, h });
     nextObstacle = Math.floor(90 / (speed / 3)) + Math.floor(Math.random() * 60);
   }
 
-  // Spawn votes
+  // Spawn envelopes
   nextVote--;
   if (nextVote <= 0) {
-    const voteY = Math.random() < 0.4 ? GROUND_Y - 60 : GROUND_Y - 25;
-    votes.push({ x: 840, y: voteY });
+    const vy = Math.random() < 0.4 ? GROUND_Y - 80 : GROUND_Y - 40;
+    votes.push({ x:840, y:vy });
     nextVote = Math.floor(40 + Math.random() * 40);
   }
 
   // Move obstacles
   obstacles.forEach(ob => ob.x -= speed);
-  obstacles = obstacles.filter(ob => ob.x > -60);
+  obstacles = obstacles.filter(ob => ob.x > -80);
 
-  // Move votes
+  // Move + collect envelopes
   const voteRadius = selectedChar.voteRadius || 30;
   votes = votes.filter(v => {
     v.x -= speed;
-    // Magnet: pull towards player if close
-    const dx = (player.x + 8) - (v.x + 10);
-    const dy = (player.y - 8) - (v.y + 10);
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < voteRadius) {
-      v.x += dx * 0.18;
-      v.y += dy * 0.18;
-    }
-    // Collect
-    if (dist < 18) {
-      score++;
-      spawnParticles(v.x + 10, v.y + 10, '#f5c518cc', 8);
-      return false;
-    }
+    const dx = (player.x + 10) - (v.x + 11);
+    const dy = (player.y - 8) - (v.y + 8);
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < voteRadius) { v.x += dx * 0.18; v.y += dy * 0.18; }
+    if (dist < 18) { score++; spawnParticles(v.x+11, v.y+8, '#f5c518cc', 8); return false; }
     return v.x > -30;
   });
 
   // Collision with obstacles
+  const px = player.x + 3, pw = 10, py = player.y - 14, ph = 14;
   obstacles.forEach(ob => {
-    const px = player.x + 3, pw = 10;
-    const py = player.y - 14, ph = 14;
-    let ox = ob.x + 4, ow = ob.w - 8;
-    let oy, oh;
     if (ob.type === 'pothole') {
-      oy = GROUND_Y + 14; oh = 14;
-      // Pothole: only collide if player is on the ground
+      // Only collide if player is on the ground and over the hole
       if (player.y >= GROUND_Y - 2) {
-        if (px < ox + ow && px + pw > ox && py + ph > oy - 10) endGame();
+        if (px < ob.x + ob.w - 4 && px + pw > ob.x + 4) endGame();
+      }
+    } else if (ob.type === 'loadshedding') {
+      // Hitting generator triggers darkness, not instant death
+      if (loadsheddingAlpha === 0 && loadsheddingTimer === 0) {
+        const ox = ob.x + 4, ow = ob.w - 8;
+        const oy = GROUND_Y - ob.h, oh = ob.h;
+        if (px < ox + ow && px + pw > ox && py < oy + oh && py + ph > oy) {
+          // Trigger loadshedding effect
+          loadsheddingTimer = 420; // ~7 seconds at 60fps
+          loadsheddingFading = false;
+          obstacles = obstacles.filter(o => o !== ob); // remove the generator
+          spawnParticles(ob.x + 20, GROUND_Y - 20, '#e67e22cc', 16);
+
+        }
       }
     } else {
-      oy = GROUND_Y - ob.h; oh = ob.h;
+      // Taxi — solid collision
+      const ox = ob.x + 4, ow = ob.w - 8;
+      const oy = GROUND_Y - ob.h, oh = ob.h;
       if (px < ox + ow && px + pw > ox && py < oy + oh && py + ph > oy) endGame();
     }
   });
 
-  // Update particles
+  // Loadshedding timer
+  if (loadsheddingTimer > 0) {
+    loadsheddingTimer--;
+    if (!loadsheddingFading) {
+      // Fade in darkness over 60 ticks
+      loadsheddingAlpha = Math.min(1, loadsheddingAlpha + 0.016);
+    }
+    if (loadsheddingTimer <= 90) {
+      // Start fading out in last 1.5s
+      loadsheddingFading = true;
+      loadsheddingAlpha = Math.max(0, loadsheddingTimer / 90);
+    }
+    if (loadsheddingTimer === 0) {
+      loadsheddingAlpha = 0;
+    }
+  }
+
+  // Particles
   particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life--; p.vy += 0.1; });
   particles = particles.filter(p => p.life > 0);
 
-  // Update UI
+  // UI
   document.getElementById('score-display').textContent = `VOTES: ${score}`;
   document.getElementById('distance-display').textContent = `DIST: ${distance}m`;
   document.getElementById('hi-display').textContent = `BEST: ${highScore}`;
 }
 
+// ─── DRAW ─────────────────────────────────────────────────────────────────────
 function draw() {
   ctx.clearRect(0, 0, 800, 280);
   drawBackground(ctx, scrollX);
 
   if (state === 'playing' || state === 'gameover') {
-    // Draw votes
-    votes.forEach(v => drawVote(ctx, v.x, v.y, t));
+    // Envelopes
+    votes.forEach(v => drawEnvelope(ctx, v.x, v.y, t));
 
-    // Draw obstacles
+    // Obstacles
     obstacles.forEach(ob => {
-      const yOffset = ob.type === 'pothole' ? 0 : ob.h;
-      drawObstacle(ctx, ob.type, ob.x, GROUND_Y - yOffset);
+      if (ob.type === 'pothole') drawPothole(ctx, ob.x, GROUND_Y);
+      else if (ob.type === 'taxi') drawTaxi(ctx, ob.x, GROUND_Y);
+      else if (ob.type === 'loadshedding') drawGenerator(ctx, ob.x, GROUND_Y);
     });
 
-    // Draw particles
+    // Particles
     particles.forEach(p => {
       ctx.globalAlpha = p.life / 20;
       ctx.fillStyle = p.color;
@@ -685,42 +920,56 @@ function draw() {
     });
     ctx.globalAlpha = 1;
 
-    // Draw player
+    // Player
     if (selectedChar) {
       const animT = state === 'playing' ? t : 0;
       const pixels = selectedChar.getFrames(player.jumping ? 0 : animT);
-      drawPixelArt(ctx, pixels, player.x - 4, player.y - 16, 2);
+      drawPixelArt(ctx, pixels, player.x - 4, player.y - 26, 2);
     }
 
-    // Distance speed indicator
+    // Loadshedding darkness overlay — drawn LAST so it covers everything
+    if (loadsheddingAlpha > 0) {
+      drawLoadsheddingOverlay(ctx, loadsheddingAlpha, player.x, player.y);
+    }
+
+    // Speed indicator (on top of darkness so still visible)
     if (state === 'playing') {
-      ctx.fillStyle = '#ffffff33';
-      ctx.font = '10px Courier New';
+      ctx.fillStyle = loadsheddingAlpha > 0.5 ? '#C8941Eaa' : '#00000044';
+      ctx.font = 'bold 9px Courier New';
       ctx.textAlign = 'right';
       ctx.fillText(`SPD ${gameSpeed.toFixed(1)}x`, 794, 16);
       ctx.textAlign = 'left';
+    }
+
+    // On-screen loadshedding warning
+    if (loadsheddingAlpha > 0) {
+      const pulse = 0.65 + 0.35 * Math.abs(Math.sin(t * 0.08));
+      ctx.save();
+      ctx.globalAlpha = loadsheddingAlpha * pulse;
+      ctx.font = 'bold 12px Courier New';
+      ctx.textAlign = 'center';
+      const warningText = '⚡ STAGE 6 LOADSHEDDING ACTIVE ⚡';
+      const tw = ctx.measureText(warningText).width;
+      ctx.fillStyle = '#18181Acc';
+      ctx.beginPath();
+      ctx.roundRect(400 - tw/2 - 12, 10, tw + 24, 22, 3);
+      ctx.fill();
+      ctx.fillStyle = '#C8941E';
+      ctx.fillText(warningText, 400, 26);
+      ctx.restore();
     }
   }
 }
 
 // ─── LOOP ─────────────────────────────────────────────────────────────────────
-function loop() {
-  update();
-  draw();
-  requestAnimationFrame(loop);
-}
+function loop() { update(); draw(); requestAnimationFrame(loop); }
 
 // ─── INPUT ────────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
-  if (e.code === 'Space' || e.code === 'ArrowUp') {
-    e.preventDefault();
-    doJump();
-  }
+  if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); doJump(); }
 });
-
 canvas.addEventListener('click', doJump);
-canvas.addEventListener('touchstart', e => { e.preventDefault(); doJump(); }, { passive: false });
-
+canvas.addEventListener('touchstart', e => { e.preventDefault(); doJump(); }, { passive:false });
 document.getElementById('retry-btn').addEventListener('click', () => startGame(selectedChar));
 document.getElementById('change-btn').addEventListener('click', () => {
   state = 'select';
