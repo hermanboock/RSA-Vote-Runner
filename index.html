@@ -21,6 +21,10 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  html, body {
+    height: 100%;
+  }
+
   body {
     background: var(--bg);
     color: var(--text);
@@ -29,13 +33,22 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    overflow: hidden;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 8px 0;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
-  #game-container { position: relative; width: 800px; max-width: 100vw; }
+  #game-container {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+  }
 
-  /* Three-colour SA ribbon — green / gold / red, sits above header */
+  /* SA flag ribbon */
   #flag-ribbon { display: flex; height: 3px; }
   #flag-ribbon span { flex: 1; }
   #flag-ribbon span:nth-child(1) { background: var(--green); }
@@ -44,24 +57,28 @@
 
   #header {
     background: var(--surface);
-    padding: 13px 0 11px;
+    padding: 10px 0 9px;
     border-bottom: 1px solid var(--border);
   }
 
   h1 {
     text-align: center;
-    font-size: 1.75rem;
-    letter-spacing: 6px;
+    font-size: clamp(1.1rem, 5vw, 1.75rem);
+    letter-spacing: clamp(2px, 1vw, 6px);
     color: var(--gold);
-    margin-bottom: 3px;
   }
 
+  /* Canvas scales to fill container width while keeping aspect ratio */
   #canvas {
     display: block;
+    width: 100%;
+    height: auto;
     border-left: 1px solid var(--border);
     border-right: 1px solid var(--border);
     image-rendering: pixelated;
+    image-rendering: crisp-edges;
     cursor: pointer;
+    touch-action: none;
   }
 
   #ui-bar {
@@ -69,10 +86,10 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 7px 16px;
-    font-size: 0.82rem;
+    padding: 6px 12px;
+    font-size: clamp(0.62rem, 2.5vw, 0.82rem);
     color: var(--gold);
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     border: 1px solid var(--border);
     border-top: none;
   }
@@ -81,52 +98,17 @@
     background: var(--bg);
     color: var(--text-dim);
     text-align: center;
-    font-size: 0.7rem;
-    letter-spacing: 1px;
-    padding: 7px 0 10px;
+    font-size: clamp(0.55rem, 2vw, 0.7rem);
+    letter-spacing: 0.5px;
+    padding: 6px 8px 8px;
     border-left: 1px solid var(--border);
     border-right: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
+    line-height: 1.5;
   }
 
-  /* Character select */
-  #char-select {
-    position: absolute; inset: 0;
-    background: #18181Af2;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    z-index: 10;
-  }
-  #char-select h2 {
-    font-size: 1.05rem;
-    color: var(--gold);
-    letter-spacing: 4px;
-    margin-bottom: 5px;
-  }
-  #char-select p {
-    font-size: 0.58rem;
-    color: var(--text-dim);
-    letter-spacing: 2px;
-    margin-bottom: 22px;
-  }
-
-  .char-grid { display: flex; gap: 12px; }
-
-  .char-card {
-    width: 138px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    padding: 14px 10px 12px;
-    cursor: pointer; text-align: center;
-    transition: border-color 0.15s, transform 0.15s;
-    user-select: none;
-  }
-  .char-card:hover { border-color: var(--gold); transform: translateY(-3px); }
-  .char-card canvas { display: block; margin: 0 auto 10px; image-rendering: pixelated; }
-  .char-card .char-name  { font-size: 0.7rem; font-weight: bold; color: var(--gold); margin-bottom: 3px; letter-spacing: 1px; }
-  .char-card .char-party { font-size: 0.56rem; color: var(--text-dim); letter-spacing: 0.5px; margin-bottom: 6px; }
-  .char-card .char-power { font-size: 0.54rem; color: var(--teal); letter-spacing: 0.5px; }
+  /* Character select — unused HTML version, kept hidden */
+  #char-select { display: none; }
 
   /* Game over */
   #game-over {
@@ -136,30 +118,56 @@
     align-items: center; justify-content: center;
     z-index: 10;
   }
-  #game-over h2       { font-size: 1.7rem; color: var(--red); letter-spacing: 4px; margin-bottom: 8px; }
-  .final-score        { font-size: 0.9rem; color: var(--gold); margin-bottom: 4px; letter-spacing: 2px; }
-  .high-score         { font-size: 0.68rem; color: var(--text-dim); margin-bottom: 24px; letter-spacing: 1px; }
+  #game-over h2 {
+    font-size: clamp(1.1rem, 5vw, 1.7rem);
+    color: var(--red);
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+  }
+  .final-score {
+    font-size: clamp(0.7rem, 3vw, 0.9rem);
+    color: var(--gold);
+    margin-bottom: 4px;
+    letter-spacing: 2px;
+  }
+  .high-score {
+    font-size: clamp(0.6rem, 2.5vw, 0.68rem);
+    color: var(--text-dim);
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+  }
 
   .btn {
     background: var(--gold);
     color: #111;
     border: none;
-    padding: 9px 26px;
+    padding: clamp(10px, 3vw, 12px) clamp(18px, 5vw, 28px);
     font-family: 'Courier New', monospace;
-    font-size: 0.78rem;
+    font-size: clamp(0.7rem, 3vw, 0.82rem);
     font-weight: bold;
     letter-spacing: 2px;
     cursor: pointer;
     border-radius: 2px;
     margin: 4px;
+    min-height: 44px;   /* iOS tap target minimum */
+    min-width: 44px;
   }
   .btn:hover { background: var(--gold-lt); }
+  .btn:active { background: var(--gold-lt); }
   .btn.secondary {
     background: transparent;
     color: var(--text-dim);
     border: 1px solid var(--border);
   }
   .btn.secondary:hover { color: var(--text); border-color: #666; }
+  .btn.secondary:active { color: var(--text); border-color: #666; }
+
+  /* Mobile: stack game-over buttons vertically for easier tapping */
+  @media (max-width: 480px) {
+    #game-over { gap: 2px; }
+    #game-over h2 { letter-spacing: 2px; }
+    .btn { display: block; width: 80%; text-align: center; }
+  }
 </style>
 </head>
 <body>
@@ -175,7 +183,7 @@
     <span id="hi-display">BEST: 0</span>
   </div>
 
-  <div id="instructions">SPACE / TAP to jump &nbsp;|&nbsp; DOUBLE JUMP available &nbsp;|&nbsp; Collect votes and dodge problems</div>
+  <div id="instructions">TAP to jump &nbsp;·&nbsp; TAP TWICE for double jump &nbsp;·&nbsp; Collect votes and dodge problems</div>
   <div id="char-select" style="display:none;">
     <h2>CHOOSE YOUR CANDIDATE</h2>
     <p>SELECT A POLITICIAN TO BEGIN THE CAMPAIGN</p>
@@ -486,71 +494,151 @@ function drawPothole(ctx, x, groundY) {
   ctx.restore();
 }
 
-// ─── DRAW: MINIBUS TAXI ───────────────────────────────────────────────────────
+// ─── DRAW: SA MINIBUS TAXI (HiAce style) ─────────────────────────────────────
 function drawTaxi(ctx, x, groundY) {
-  const wheelR = 8;
-  const ty = groundY - wheelR * 2 - 38; // body top
-  const bodyY = groundY - wheelR * 2;   // body bottom sits on wheel tops
   const tx = x;
+  const wheelR = 10;
+  const bodyW = 88;
+  const bodyH = 44;
+  const bodyBottom = groundY - wheelR * 2 + 4;
+  const bodyTop = bodyBottom - bodyH;
+  const roofTop = bodyTop - 10;
+
   ctx.save();
 
   // Shadow
-  ctx.fillStyle = '#00000044';
-  ctx.fillRect(tx + 4, groundY - 2, 62, 5);
+  ctx.fillStyle = '#00000028';
+  ctx.fillRect(tx + 6, groundY - 1, bodyW, 6);
 
-  // Body
-  ctx.fillStyle = '#f0ede0';
+  // Roof rack / high roof cap
+  ctx.fillStyle = '#D0CCC0';
+  ctx.fillRect(tx + 8, roofTop, bodyW - 14, 12);
+  ctx.strokeStyle = '#888';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(tx + 8, roofTop, bodyW - 14, 12);
+  // Roof rack rails
+  ctx.fillStyle = '#A0A090';
+  ctx.fillRect(tx + 12, roofTop - 2, bodyW - 22, 3);
+  ctx.fillRect(tx + 14, roofTop - 4, 4, 3);
+  ctx.fillRect(tx + bodyW - 22, roofTop - 4, 4, 3);
+
+  // Main body — warm white
+  ctx.fillStyle = '#F5F2EA';
   ctx.beginPath();
-  ctx.roundRect(tx, bodyY - 28, 66, 28, 4);
+  ctx.roundRect(tx, bodyTop, bodyW, bodyH, 3);
   ctx.fill();
-
-  // Roof
-  ctx.fillStyle = '#e0ddd0';
-  ctx.beginPath();
-  ctx.roundRect(tx + 8, bodyY - 42, 46, 14, 3);
-  ctx.fill();
-
-  // Outlines
-  ctx.strokeStyle = '#222';
+  ctx.strokeStyle = '#777';
   ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.roundRect(tx, bodyY - 28, 66, 28, 4); ctx.stroke();
-  ctx.beginPath(); ctx.roundRect(tx + 8, bodyY - 42, 46, 14, 3); ctx.stroke();
+  ctx.beginPath();
+  ctx.roundRect(tx, bodyTop, bodyW, bodyH, 3);
+  ctx.stroke();
 
-  // Windscreen
-  ctx.fillStyle = '#88ccee88';
-  ctx.strokeStyle = '#444'; ctx.lineWidth = 1;
-  ctx.fillRect(tx + 10, bodyY - 40, 16, 10); ctx.strokeRect(tx + 10, bodyY - 40, 16, 10);
+  // Body panel line (horizontal crease mid-body)
+  ctx.strokeStyle = '#CCCCBB';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(tx + 2, bodyTop + bodyH * 0.48);
+  ctx.lineTo(tx + bodyW - 2, bodyTop + bodyH * 0.48);
+  ctx.stroke();
 
-  // Rear window
-  ctx.fillRect(tx + 40, bodyY - 40, 12, 10); ctx.strokeRect(tx + 40, bodyY - 40, 12, 10);
+  // Windscreen — tall, slight angle
+  ctx.fillStyle = '#B8D8E8AA';
+  ctx.strokeStyle = '#444';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(tx + 5,  bodyTop + 3);
+  ctx.lineTo(tx + 24, bodyTop + 1);
+  ctx.lineTo(tx + 24, bodyTop + 22);
+  ctx.lineTo(tx + 5,  bodyTop + 24);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
 
-  // Side windows
-  ctx.fillStyle = '#88ccee55';
-  ctx.fillRect(tx + 4, bodyY - 24, 14, 10);  ctx.strokeRect(tx + 4, bodyY - 24, 14, 10);
-  ctx.fillRect(tx + 20, bodyY - 24, 14, 10); ctx.strokeRect(tx + 20, bodyY - 24, 14, 10);
-  ctx.fillRect(tx + 36, bodyY - 24, 14, 10); ctx.strokeRect(tx + 36, bodyY - 24, 14, 10);
+  // Side windows — 3 rectangular, evenly spaced
+  ctx.fillStyle = '#B8D8E888';
+  ctx.strokeStyle = '#555';
+  ctx.lineWidth = 1;
+  [[28, 4, 16, 14], [47, 4, 16, 14], [66, 4, 16, 14]].forEach(([wx, wy, ww, wh]) => {
+    ctx.fillRect(tx + wx, bodyTop + wy, ww, wh);
+    ctx.strokeRect(tx + wx, bodyTop + wy, ww, wh);
+    // Window tint line
+    ctx.fillStyle = '#4488AA22';
+    ctx.fillRect(tx + wx, bodyTop + wy, ww, 4);
+    ctx.fillStyle = '#B8D8E888';
+  });
 
-  // Wheels sitting on groundY
+  // ── DECORATIVE STRIPE — SA taxi style wavy graphic band ──────────────────
+  const sy = bodyTop + bodyH - 16;
+  // Base stripe — deep green
+  ctx.fillStyle = '#1A6B3A';
+  ctx.fillRect(tx + 1, sy, bodyW - 2, 14);
+
+  // Gold zigzag / chevron pattern over green
+  ctx.fillStyle = '#E8A820';
+  for (let i = 0; i < 8; i++) {
+    const zx = tx + 2 + i * 11;
+    ctx.beginPath();
+    ctx.moveTo(zx,      sy + 1);
+    ctx.lineTo(zx + 5,  sy + 7);
+    ctx.lineTo(zx + 10, sy + 1);
+    ctx.lineTo(zx + 10, sy + 4);
+    ctx.lineTo(zx + 5,  sy + 10);
+    ctx.lineTo(zx,      sy + 4);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Red stripe below chevrons
+  ctx.fillStyle = '#B82020';
+  ctx.fillRect(tx + 1, sy + 11, bodyW - 2, 3);
+
+  // Black bumper strip
+  ctx.fillStyle = '#111';
+  ctx.fillRect(tx + 1, bodyBottom - 5, bodyW - 2, 7);
+  // Bumper highlight
+  ctx.fillStyle = '#333';
+  ctx.fillRect(tx + 1, bodyBottom - 5, bodyW - 2, 2);
+
+  // Headlight (yellow)
+  ctx.fillStyle = '#FFE060';
+  ctx.fillRect(tx + 3, bodyBottom - 22, 6, 5);
+  ctx.strokeStyle = '#AA9900';
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(tx + 3, bodyBottom - 22, 6, 5);
+
+  // Front grille
   ctx.fillStyle = '#222';
-  ctx.beginPath(); ctx.arc(tx + 14, groundY - wheelR, wheelR, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(tx + 52, groundY - wheelR, wheelR, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = '#888';
-  ctx.beginPath(); ctx.arc(tx + 14, groundY - wheelR, 4, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(tx + 52, groundY - wheelR, 4, 0, Math.PI*2); ctx.fill();
+  ctx.fillRect(tx + 3, bodyBottom - 16, 18, 8);
+  ctx.fillStyle = '#444';
+  for (let gi = 0; gi < 3; gi++) {
+    ctx.fillRect(tx + 5 + gi * 5, bodyBottom - 14, 3, 5);
+  }
 
-  // TAXI stripe
-  ctx.fillStyle = '#e74c3c';
-  ctx.fillRect(tx + 2, bodyY - 10, 62, 8);
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 7px Courier New';
-  ctx.textAlign = 'center';
-  ctx.fillText('TAXI', tx + 33, bodyY - 3);
+  // Side door handle detail
+  ctx.fillStyle = '#BBBBAA';
+  ctx.fillRect(tx + 44, bodyTop + 24, 8, 2);
+
+  // Wheels
+  ctx.fillStyle = '#111';
+  ctx.beginPath(); ctx.arc(tx + 18, groundY - wheelR, wheelR, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(tx + 68, groundY - wheelR, wheelR, 0, Math.PI*2); ctx.fill();
+  // Tyre tread ring
+  ctx.strokeStyle = '#2A2A2A';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(tx + 18, groundY - wheelR, wheelR - 2, 0, Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(tx + 68, groundY - wheelR, wheelR - 2, 0, Math.PI*2); ctx.stroke();
+  // Hubcap
+  ctx.fillStyle = '#CCCCCC';
+  ctx.beginPath(); ctx.arc(tx + 18, groundY - wheelR, 5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(tx + 68, groundY - wheelR, 5, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#999';
+  ctx.beginPath(); ctx.arc(tx + 18, groundY - wheelR, 2, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(tx + 68, groundY - wheelR, 2, 0, Math.PI*2); ctx.fill();
 
   // Hooting sparks
-  ctx.strokeStyle = '#f5c518'; ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.moveTo(tx - 4, bodyY - 26); ctx.lineTo(tx - 9, bodyY - 30); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(tx - 4, bodyY - 20); ctx.lineTo(tx - 11, bodyY - 20); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(tx - 4, bodyY - 14); ctx.lineTo(tx - 8, bodyY - 10); ctx.stroke();
+  ctx.strokeStyle = '#FFD020'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(tx - 3, bodyTop + 8);  ctx.lineTo(tx - 10, bodyTop + 3);  ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(tx - 3, bodyTop + 18); ctx.lineTo(tx - 12, bodyTop + 18); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(tx - 3, bodyTop + 28); ctx.lineTo(tx - 9,  bodyTop + 33); ctx.stroke();
 
   ctx.restore();
 }
@@ -912,75 +1000,122 @@ function drawCharSelect() {
   ctx.fillStyle = '#18181Af8';
   ctx.fillRect(0, 0, W, H);
 
-  // Title
-  ctx.fillStyle = '#C8941E';
-  ctx.font = 'bold 16px Courier New';
-  ctx.textAlign = 'center';
-  ctx.fillText('WHO HAS YOUR VOTE?', W / 2, 22);
-  ctx.fillStyle = '#555';
-  ctx.font = '10px Courier New';
-  ctx.fillText('CLICK TO SELECT', W / 2, 34);
+  // Detect if canvas is being displayed narrow (mobile)
+  const displayWidth = canvas.getBoundingClientRect().width;
+  const isMobile = displayWidth < 500;
 
-  // Layout: 4 cards filling the width, thin gaps
-  const gap = 6;
-  const cardW = Math.floor((W - gap * 5) / 4); // ~186px each
-  const cardH = H - 40; // ~240px tall
-  const cy = 38;
+  if (isMobile) {
+    // ── 2×2 GRID LAYOUT ────────────────────────────────────────────────────
+    const gap = 8;
+    const cardW = Math.floor((W - gap * 3) / 2);
+    const cardH = Math.floor((H - gap * 3) / 2);
 
-  CHARACTERS.forEach((char, i) => {
-    const cx = gap + i * (cardW + gap);
-    const isHovered = charSelectHover === i;
-
-    // Card bg
-    ctx.fillStyle = isHovered ? '#252528' : '#1A1A1E';
-    ctx.strokeStyle = isHovered ? char.color : '#2E2E34';
-    ctx.lineWidth = isHovered ? 2 : 1;
-    ctx.beginPath();
-    ctx.roundRect(cx, cy, cardW, cardH, 3);
-    ctx.fill();
-    ctx.stroke();
-
-    // Top colour bar
-    ctx.fillStyle = char.color + (isHovered ? 'FF' : 'BB');
-    ctx.fillRect(cx + 1, cy + 1, cardW - 2, 5);
-
-    // Sprite — scale 6, centred horizontally, sitting above the text strip
-    const textStripH = 62;
-    const spriteScale = 6;
-    const spriteW = 14 * spriteScale; // ~84px
-    const spriteH = 14 * spriteScale; // ~84px
-    const spriteAreaH = cardH - textStripH - 8;
-    const spriteX = cx + Math.floor((cardW - spriteW) / 2) - 4;
-    const spriteY = cy + 8 + Math.floor((spriteAreaH - spriteH) / 2);
-    drawPixelArt(ctx, char.getFrames(Math.floor(t / 8)), spriteX, spriteY, spriteScale);
-
-    // Text strip at bottom of card
-    const textY = cy + cardH - textStripH;
-
-    // Divider
-    ctx.fillStyle = char.color + '44';
-    ctx.fillRect(cx + 8, textY, cardW - 16, 1);
-
-    // Name
-    ctx.fillStyle = char.color;
-    ctx.font = 'bold 11px Courier New';
+    ctx.fillStyle = '#C8941E';
+    ctx.font = 'bold 20px Courier New';
     ctx.textAlign = 'center';
-    ctx.fillText(char.name, cx + cardW / 2, textY + 12);
+    ctx.fillText('WHO HAS YOUR VOTE?', W / 2, 22);
 
-    // Party
-    ctx.fillStyle = '#888';
-    ctx.font = '9px Courier New';
-    // Split party name across 2 lines
-    const words = char.party.split(' ');
-    const mid = Math.ceil(words.length / 2);
-    ctx.fillText(words.slice(0, mid).join(' '), cx + cardW / 2, textY + 26);
-    ctx.fillText(words.slice(mid).join(' '), cx + cardW / 2, textY + 38);
+    CHARACTERS.forEach((char, i) => {
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const cx = gap + col * (cardW + gap);
+      const cy = gap * 1.5 + row * (cardH + gap) + 14;
+      const isHovered = charSelectHover === i;
 
-    // Power
-    ctx.fillStyle = '#4A9880';
-    ctx.font = '9px Courier New';
-    ctx.fillText('★ ' + char.power.toUpperCase(), cx + cardW / 2, textY + 52);
-  });
+      // Card
+      ctx.fillStyle = isHovered ? '#252528' : '#1A1A1E';
+      ctx.strokeStyle = isHovered ? char.color : '#2E2E34';
+      ctx.lineWidth = isHovered ? 2 : 1;
+      ctx.beginPath();
+      ctx.roundRect(cx, cy, cardW, cardH, 3);
+      ctx.fill(); ctx.stroke();
+
+      // Top bar
+      ctx.fillStyle = char.color + (isHovered ? 'FF' : 'AA');
+      ctx.fillRect(cx + 1, cy + 1, cardW - 2, 5);
+
+      // Sprite — scale 5, centred
+      const textStripH = 48;
+      const spriteScale = 5;
+      const spriteW = 14 * spriteScale;
+      const spriteAreaH = cardH - textStripH - 6;
+      const spriteX = cx + Math.floor((cardW - spriteW) / 2) - 4;
+      const spriteY = cy + 6 + Math.floor((spriteAreaH - 14 * spriteScale) / 2);
+      drawPixelArt(ctx, char.getFrames(Math.floor(t / 8)), spriteX, spriteY, spriteScale);
+
+      // Text strip
+      const textY = cy + cardH - textStripH;
+      ctx.fillStyle = char.color + '44';
+      ctx.fillRect(cx + 8, textY, cardW - 16, 1);
+
+      ctx.fillStyle = char.color;
+      ctx.font = 'bold 14px Courier New';
+      ctx.textAlign = 'center';
+      ctx.fillText(char.name, cx + cardW / 2, textY + 14);
+
+      ctx.fillStyle = '#4A9880';
+      ctx.font = '11px Courier New';
+      ctx.fillText('★ ' + char.power.toUpperCase(), cx + cardW / 2, textY + 32);
+    });
+
+  } else {
+    // ── 4-ACROSS LAYOUT (desktop) ──────────────────────────────────────────
+    ctx.fillStyle = '#C8941E';
+    ctx.font = 'bold 16px Courier New';
+    ctx.textAlign = 'center';
+    ctx.fillText('WHO HAS YOUR VOTE?', W / 2, 22);
+    ctx.fillStyle = '#555';
+    ctx.font = '10px Courier New';
+    ctx.fillText('CLICK TO SELECT', W / 2, 34);
+
+    const gap = 6;
+    const cardW = Math.floor((W - gap * 5) / 4);
+    const cardH = H - 40;
+    const cy = 38;
+
+    CHARACTERS.forEach((char, i) => {
+      const cx = gap + i * (cardW + gap);
+      const isHovered = charSelectHover === i;
+
+      ctx.fillStyle = isHovered ? '#252528' : '#1A1A1E';
+      ctx.strokeStyle = isHovered ? char.color : '#2E2E34';
+      ctx.lineWidth = isHovered ? 2 : 1;
+      ctx.beginPath();
+      ctx.roundRect(cx, cy, cardW, cardH, 3);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = char.color + (isHovered ? 'FF' : 'BB');
+      ctx.fillRect(cx + 1, cy + 1, cardW - 2, 5);
+
+      const textStripH = 62;
+      const spriteScale = 6;
+      const spriteW = 14 * spriteScale;
+      const spriteAreaH = cardH - textStripH - 8;
+      const spriteX = cx + Math.floor((cardW - spriteW) / 2) - 4;
+      const spriteY = cy + 8 + Math.floor((spriteAreaH - 14 * spriteScale) / 2);
+      drawPixelArt(ctx, char.getFrames(Math.floor(t / 8)), spriteX, spriteY, spriteScale);
+
+      const textY = cy + cardH - textStripH;
+      ctx.fillStyle = char.color + '44';
+      ctx.fillRect(cx + 8, textY, cardW - 16, 1);
+
+      ctx.fillStyle = char.color;
+      ctx.font = 'bold 11px Courier New';
+      ctx.textAlign = 'center';
+      ctx.fillText(char.name, cx + cardW / 2, textY + 12);
+
+      ctx.fillStyle = '#888';
+      ctx.font = '9px Courier New';
+      const words = char.party.split(' ');
+      const mid = Math.ceil(words.length / 2);
+      ctx.fillText(words.slice(0, mid).join(' '), cx + cardW / 2, textY + 26);
+      ctx.fillText(words.slice(mid).join(' '), cx + cardW / 2, textY + 38);
+
+      ctx.fillStyle = '#4A9880';
+      ctx.font = '9px Courier New';
+      ctx.fillText('★ ' + char.power.toUpperCase(), cx + cardW / 2, textY + 52);
+    });
+  }
 
   ctx.textAlign = 'left';
 }
@@ -989,14 +1124,32 @@ function drawCharSelect() {
 let charSelectHover = -1;
 
 function getCharSelectIndex(mouseX, mouseY) {
-  const gap = 6;
-  const cardW = Math.floor((800 - gap * 5) / 4);
-  const cardH = 280 - 40;
-  const cy = 38;
-  for (let i = 0; i < 4; i++) {
-    const cx = gap + i * (cardW + gap);
-    if (mouseX >= cx && mouseX <= cx + cardW && mouseY >= cy && mouseY <= cy + cardH) {
-      return i;
+  const displayWidth = canvas.getBoundingClientRect().width;
+  const isMobile = displayWidth < 500;
+
+  if (isMobile) {
+    const gap = 8;
+    const cardW = Math.floor((800 - gap * 3) / 2);
+    const cardH = Math.floor((280 - gap * 3) / 2);
+    for (let i = 0; i < 4; i++) {
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const cx = gap + col * (cardW + gap);
+      const cy = gap * 1.5 + row * (cardH + gap) + 14;
+      if (mouseX >= cx && mouseX <= cx + cardW && mouseY >= cy && mouseY <= cy + cardH) {
+        return i;
+      }
+    }
+  } else {
+    const gap = 6;
+    const cardW = Math.floor((800 - gap * 5) / 4);
+    const cardH = 280 - 40;
+    const cy = 38;
+    for (let i = 0; i < 4; i++) {
+      const cx = gap + i * (cardW + gap);
+      if (mouseX >= cx && mouseX <= cx + cardW && mouseY >= cy && mouseY <= cy + cardH) {
+        return i;
+      }
     }
   }
   return -1;
@@ -1065,8 +1218,8 @@ function update() {
   nextObstacle--;
   if (nextObstacle <= 0) {
     const type = OBSTACLE_TYPES[Math.floor(Math.random() * OBSTACLE_TYPES.length)];
-    const w = type === 'pothole' ? 50 : type === 'taxi' ? 66 : 44;
-    const h = type === 'pothole' ? 18 : type === 'taxi' ? 38 : 32;
+    const w = type === 'pothole' ? 50 : type === 'taxi' ? 88 : 44;
+    const h = type === 'pothole' ? 18 : type === 'taxi' ? 66 : 32;
     obstacles.push({ x:840, type, w, h });
     nextObstacle = Math.floor(90 / (speed / 3)) + Math.floor(Math.random() * 60);
   }
