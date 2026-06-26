@@ -3,200 +3,740 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;600;700&display=swap" rel="stylesheet">
 <title>Run The Votes</title>
 <style>
   :root {
-    --bg:       #18181A;
-    --surface:  #222226;
-    --surface2: #2A2A2E;
-    --border:   #3A3A40;
     --gold:     #C8941E;
     --gold-lt:  #E0AA3A;
-    --text:     #E6E2D8;
-    --text-dim: #7A7870;
-    --green:    #2E7D52;
-    --red:      #A63228;
-    --teal:     #4A9880;
+    --red-sa:   #A63228;
+    --green-sa: #2E7D52;
+    --bg:       #0a0a0a;
+    --surface:  #141414;
+    --border:   rgba(255,255,255,0.08);
+    --text:     #FFFFFF;
+    --dim:      rgba(255,255,255,0.45);
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  html, body {
-    height: 100%;
-  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { height:100%; }
 
   body {
+    font-family: 'Teko', 'Courier New', sans-serif;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
     background: var(--bg);
     color: var(--text);
-    font-family: 'Courier New', monospace;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100dvh;
-    overflow-x: hidden;
-    overflow-y: auto;
-    padding: 8px 0;
-    touch-action: manipulation;
-    user-select: none;
-    -webkit-user-select: none;
   }
 
+  /* ── FLAG BACKGROUND ─────────────────────────────────────────────────────── */
+  #flag-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.12;
+    pointer-events: none;
+  }
+  #flag-bg svg { width:100%; height:100%; }
+
+  /* ── GAME CONTAINER ──────────────────────────────────────────────────────── */
   #game-container {
     position: relative;
+    z-index: 1;
     width: 100%;
-    max-width: 800px;
+    max-width: 480px;
   }
 
-  /* SA flag ribbon */
-  #flag-ribbon { display: flex; height: 3px; }
-  #flag-ribbon span { flex: 1; }
-  #flag-ribbon span:nth-child(1) { background: var(--green); }
-  #flag-ribbon span:nth-child(2) { background: var(--gold); }
-  #flag-ribbon span:nth-child(3) { background: var(--red); }
-
+  /* ── HEADER ──────────────────────────────────────────────────────────────── */
   #header {
-    background: var(--surface);
-    padding: 10px 0 9px;
+    background: #000;
+    padding: 14px 20px 12px;
+    text-align: center;
     border-bottom: 1px solid var(--border);
   }
 
   h1 {
-    text-align: center;
-    font-size: clamp(1.1rem, 5vw, 1.75rem);
-    letter-spacing: clamp(2px, 1vw, 6px);
-    color: var(--gold);
+    font-family: 'Teko', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.6rem, 7vw, 2.2rem);
+    letter-spacing: 6px;
+    color: #fff;
+    text-transform: uppercase;
+    line-height: 1;
   }
 
-  /* Canvas scales to fill container width while keeping aspect ratio */
+  /* ── CANVAS ──────────────────────────────────────────────────────────────── */
   #canvas {
     display: block;
     width: 100%;
     height: auto;
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     cursor: pointer;
     touch-action: none;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
   }
 
+  /* ── UI BAR ──────────────────────────────────────────────────────────────── */
   #ui-bar {
-    background: var(--surface);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 6px 12px;
-    font-size: clamp(0.62rem, 2.5vw, 0.82rem);
+    padding: 8px 16px;
+    font-family: 'Teko', sans-serif;
+    font-size: clamp(1rem, 4vw, 1.15rem);
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: var(--surface);
     color: var(--gold);
-    letter-spacing: 1px;
-    border: 1px solid var(--border);
-    border-top: none;
-  }
-
-  #instructions {
-    background: var(--bg);
-    color: var(--text-dim);
-    text-align: center;
-    font-size: clamp(0.55rem, 2vw, 0.7rem);
-    letter-spacing: 0.5px;
-    padding: 6px 8px 8px;
+    border-top: 1px solid var(--border);
     border-left: 1px solid var(--border);
     border-right: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
+  }
+
+  #ui-bar #score-display { color: var(--gold); }
+  #ui-bar #distance-display { color: var(--dim); font-size: 0.9em; }
+  #ui-bar #hi-display { color: var(--dim); font-size: 0.9em; }
+
+  /* ── INSTRUCTIONS (desktop only) ─────────────────────────────────────────── */
+  #instructions {
+    display: none;
+    text-align: center;
+    font-family: 'Teko', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--dim);
+    padding: 7px 12px 9px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
     line-height: 1.5;
   }
+  @media (min-width: 601px) { #instructions { display: block; } }
 
-  /* Character select — unused HTML version, kept hidden */
-  #char-select { display: none; }
+  /* ── MOBILE CONTROLS ─────────────────────────────────────────────────────── */
+  #mobile-controls {
+    display: none;
+    gap: 10px;
+    padding: 10px 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    align-items: center;
+  }
+  @media (max-width: 600px) { #mobile-controls { display: flex; } }
 
-  /* Game over */
-  #game-over {
-    position: absolute; inset: 0;
-    background: #18181Adc;
-    display: none; flex-direction: column;
-    align-items: center; justify-content: center;
-    z-index: 10;
-  }
-  #game-over h2 {
-    font-size: clamp(1.1rem, 5vw, 1.7rem);
-    color: var(--red);
-    letter-spacing: 4px;
-    margin-bottom: 8px;
-  }
-  .final-score {
-    font-size: clamp(0.7rem, 3vw, 0.9rem);
-    color: var(--gold);
-    margin-bottom: 4px;
+  #mobile-score {
+    font-family: 'Teko', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
     letter-spacing: 2px;
-  }
-  .high-score {
-    font-size: clamp(0.6rem, 2.5vw, 0.68rem);
-    color: var(--text-dim);
-    margin-bottom: 20px;
-    letter-spacing: 1px;
+    color: var(--gold);
+    min-width: 80px;
+    text-align: center;
   }
 
-  .btn {
+  #jump-btn {
+    flex: 1;
     background: var(--gold);
     color: #111;
     border: none;
-    padding: clamp(10px, 3vw, 12px) clamp(18px, 5vw, 28px);
-    font-family: 'Courier New', monospace;
-    font-size: clamp(0.7rem, 3vw, 0.82rem);
-    font-weight: bold;
-    letter-spacing: 2px;
+    border-radius: 10px;
+    font-family: 'Teko', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    min-height: 58px;
     cursor: pointer;
-    border-radius: 2px;
-    margin: 4px;
-    min-height: 44px;   /* iOS tap target minimum */
-    min-width: 44px;
+    transition: background 0.08s, transform 0.06s;
   }
-  .btn:hover { background: var(--gold-lt); }
-  .btn:active { background: var(--gold-lt); }
+  #jump-btn:active { background: #fff; transform: scale(0.97); }
+
+  /* ── LEGACY CHAR SELECT (hidden) ─────────────────────────────────────────── */
+  #char-select { display: none; }
+
+  /* ── GAME OVER OVERLAY ───────────────────────────────────────────────────── */
+  #game-over {
+    position: fixed; inset: 0;
+    background: #0a0a0aee;
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 50;
+    padding: 24px;
+    gap: 0;
+  }
+
+  #game-over h2 {
+    font-family: 'Teko', sans-serif;
+    font-weight: 700;
+    font-size: clamp(2.4rem, 12vw, 3.2rem);
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--red-sa);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .final-score {
+    font-family: 'Teko', sans-serif;
+    font-size: clamp(1.4rem, 6vw, 1.8rem);
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 2px;
+  }
+
+  .high-score {
+    font-family: 'Teko', sans-serif;
+    font-size: clamp(0.9rem, 3.5vw, 1.05rem);
+    font-weight: 400;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 20px;
+  }
+
+  /* Selected char/power reminder */
+  #game-over-meta {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 320px;
+  }
+  .meta-pill {
+    font-family: 'Teko', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 16px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    flex: 1;
+    text-align: center;
+    background: rgba(255,255,255,0.05);
+  }
+
+  /* ── BUTTONS ─────────────────────────────────────────────────────────────── */
+  .btn {
+    width: 100%;
+    height: 54px;
+    background: var(--gold);
+    color: #111;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Teko', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin: 0;
+    transition: background 0.1s, transform 0.06s;
+    display: block;
+    box-shadow: 0 4px 16px rgba(200,148,30,0.3);
+  }
+  .btn:hover  { background: var(--gold-lt); }
+  .btn:active { background: var(--gold-lt); transform: scale(0.97); }
+
   .btn.secondary {
     background: transparent;
-    color: var(--text-dim);
-    border: 1px solid var(--border);
+    color: var(--dim);
+    border: 1.5px solid var(--border);
+    box-shadow: none;
   }
-  .btn.secondary:hover { color: var(--text); border-color: #666; }
-  .btn.secondary:active { color: var(--text); border-color: #666; }
+  .btn.secondary:hover  { color: var(--text); border-color: rgba(255,255,255,0.25); }
+  .btn.secondary:active { transform: scale(0.97); }
 
-  /* Mobile: stack game-over buttons vertically for easier tapping */
-  @media (max-width: 480px) {
-    #game-over { gap: 2px; }
-    #game-over h2 { letter-spacing: 2px; }
-    .btn { display: block; width: 80%; text-align: center; }
+  #game-over-btns {
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
+
+
+
+  /* ══ SELECT SCREEN OVERLAY — matches prototype exactly ══ */
+  #rtv-select {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+  }
+  #rtv-select.active { display: block; }
+  #rtv-select #flag-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.12;
+  }
+  #rtv-select #flag-bg svg { width: 100%; height: 100%; }
+
+  /* ── SCREEN ──────────────────────────────────────────────────────────────── */
+  #rtv-select #screen {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  /* ── TITLE BAR ───────────────────────────────────────────────────────────── */
+  #rtv-select #title-bar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px 10px;
+  }
+  #rtv-select #game-title {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: #fff;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  #rtv-select #phase-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+  }
+
+  /* ── SUBTITLE ────────────────────────────────────────────────────────────── */
+  #rtv-select #subtitle {
+    flex-shrink: 0;
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    text-align: center;
+    padding: 0 20px 10px;
+  }
+
+  /* ── CHARACTER CARD ──────────────────────────────────────────────────────── */
+  #rtv-select #char-card {
+    flex: 1;
+    margin: 0 16px;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.3s;
+    border: 1.5px solid rgba(255,255,255,0.1);
+  }
+
+  /* Dynamic colour backdrop — fills card bg */
+  #rtv-select #card-backdrop {
+    position: absolute;
+    inset: 0;
+    transition: background 0.4s;
+    z-index: 0;
+  }
+
+  /* Dark overlay gradient so text is readable */
+  #rtv-select #card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.55) 0%,
+      rgba(0,0,0,0.1) 40%,
+      rgba(0,0,0,0.0) 55%,
+      rgba(0,0,0,0.7) 75%,
+      rgba(0,0,0,0.95) 100%
+    );
+    z-index: 1;
+  }
+
+  /* ── SPRITE AREA ─────────────────────────────────────────────────────────── */
+  #rtv-select #sprite-wrap {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  #rtv-select #sprite-canvas {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    display: block;
+  }
+
+  /* ── CHARACTER INFO (bottom of card) ─────────────────────────────────────── */
+  #rtv-select #char-info {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 16px 20px 18px;
+    z-index: 3;
+  }
+  #rtv-select #char-tagline {
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  #rtv-select #char-name {
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #fff;
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 4px;
+    transition: color 0.3s;
+  }
+  #rtv-select #char-party {
+    font-size: 0.78rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.45);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  /* ── STATS BARS ──────────────────────────────────────────────────────────── */
+  #rtv-select #char-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  #rtv-select .stat-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  #rtv-select .stat-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    width: 70px;
+    flex-shrink: 0;
+  }
+  #rtv-select .stat-track {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  #rtv-select .stat-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(0.25,0.46,0.45,0.94), background 0.3s;
+  }
+  #rtv-select .stat-value {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.6);
+    width: 24px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ── NAVIGATION ──────────────────────────────────────────────────────────── */
+  #rtv-select #nav-row {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px 8px;
+  }
+  #rtv-select .nav-btn {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.7);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.1s, border-color 0.1s, transform 0.08s;
+    font-family: 'Teko', sans-serif;
+  }
+  #rtv-select .nav-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.12); }
+  #rtv-select .nav-btn:disabled { opacity: 0.2; pointer-events: none; }
+
+  /* Dots */
+  #rtv-select #dots {
+    display: flex; gap: 8px; align-items: center;
+  }
+  #rtv-select .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    transition: background 0.2s, transform 0.2s;
+  }
+  #rtv-select .dot.active {
+    transform: scale(1.4);
+  }
+
+  /* ── SELECT BUTTON ───────────────────────────────────────────────────────── */
+  #rtv-select #bottom {
+    flex-shrink: 0;
+    padding: 8px 16px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  #rtv-select #action-btn {
+    width: 100%;
+    height: 54px;
+    border-radius: 12px;
+    border: none;
+    font-family: 'Teko', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.1s, transform 0.08s, opacity 0.2s;
+  }
+  #rtv-select #action-btn:disabled { opacity: 0.3; pointer-events: none; }
+  #rtv-select #action-btn:active { transform: scale(0.98); }
+  #rtv-select #back-btn {
+    display: none;
+    width: 100%;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    font-family: 'Teko', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.1s, transform 0.08s;
+  }
+  #rtv-select #back-btn.visible { display: block; }
+  #rtv-select #back-btn:active { background: rgba(255,255,255,0.08); transform: scale(0.98); }
+
+  /* ── POWER CARD (mirrors char-card structure) ──────────────────────────── */
+  #rtv-select #power-card {
+    display: none;
+    flex: 1;
+    margin: 0 16px;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    min-height: 0;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    flex-direction: column;
+    transition: border-color 0.3s;
+  }
+  #rtv-select #power-card.active { display: flex; }
+  #rtv-select #power-backdrop {
+    position: absolute;
+    inset: 0;
+    transition: background 0.4s;
+    z-index: 0;
+  }
+  #rtv-select #power-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0,0,0,0) 0%,
+      rgba(0,0,0,0) 50%,
+      rgba(0,0,0,0.7) 75%,
+      rgba(0,0,0,0.95) 100%
+    );
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  #rtv-select #power-info {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 16px 20px 18px;
+    z-index: 3;
+  }
+  #rtv-select #power-tagline {
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  #rtv-select #power-name {
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #fff;
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 4px;
+    transition: color 0.3s;
+  }
+  #rtv-select #power-desc-text {
+    font-size: 0.78rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.45);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  #rtv-select #power-stats { display: flex; flex-direction: column; gap: 5px; }
+  #rtv-select #power-emoji-display {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    font-size: 7rem;
+  }
+
 </style>
 </head>
 <body>
-<div id="game-container">
-<div id="flag-ribbon"><span></span><span></span><span></span></div>
+
+<!-- SA FLAG FULL BACKGROUND -->
+<div id="flag-bg">
+  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+       viewBox="0 0 6 9" preserveAspectRatio="xMidYMid slice">
+    <clipPath id="Z"><path d="M0,0 4.5,3 0,6" id="X"/></clipPath>
+    <clipPath id="A"><path d="M0,0H9V6H0z"/></clipPath>
+    <g clip-path="url(#A)" transform="matrix(0,1,1,0,0,0)">
+      <path d="M0,0V6H9V0z" fill="#001489"/>
+      <path d="M0,0V3H9V0z" fill="#e03c31"/>
+      <g stroke-width="2" stroke="#fff">
+        <path d="M0,0 4.5,3 0,6M4.5,3H9" id="W"/>
+        <use xlink:href="#X" stroke="#ffb81c" clip-path="url(#Z)"/>
+      </g>
+      <use xlink:href="#W" fill="none" stroke="#007749" stroke-width="1.2"/>
+    </g>
+  </svg>
+</div>
+
+
+<!-- ══ SELECT SCREEN OVERLAY ══ -->
+<div id="rtv-select" class="active">
+<div id="screen">
+  <!-- TITLE -->
+  <div id="title-bar">
+    <div id="game-title">Run The Votes</div>
+    <div id="phase-label">1 / 2</div>
+  </div>
+  <div id="subtitle">Who has your vote?</div>
+
+  <!-- CHARACTER CARD -->
+  <div id="char-card">
+    <div id="card-backdrop"></div>
+    <div id="card-overlay"></div>
+    <div id="sprite-wrap">
+      <canvas id="sprite-canvas"></canvas>
+    </div>
+    <div id="char-info">
+      <div id="char-tagline"></div>
+      <div id="char-name"></div>
+      <div id="char-party"></div>
+      <div id="char-stats"></div>
+    </div>
+  </div>
+
+  <!-- POWER CARD (hidden until phase 2) -->
+  <div id="power-card">
+    <div id="power-backdrop"></div>
+    <div id="power-overlay"></div>
+    <div id="power-emoji-display"></div>
+    <div id="power-info">
+      <div id="power-tagline"></div>
+      <div id="power-name"></div>
+      <div id="power-desc-text"></div>
+      <div id="power-stats"></div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div id="nav-row">
+    <button class="nav-btn" id="prev-btn">←</button>
+    <div id="dots"></div>
+    <button class="nav-btn" id="next-btn">→</button>
+  </div>
+
+  <!-- BUTTONS -->
+  <div id="bottom">
+    <button id="action-btn" disabled>Select</button>
+    <button id="back-btn">← Back</button>
+  </div>
+</div>
+</div>
+
+<div id="game-container" style="display:none;">
 <div id="header">
-  <h1>🗳️ VOTE RUNNER</h1>
+  <h1>Run The Votes</h1>
 </div>
   <canvas id="canvas" width="800" height="280"></canvas>
   <div id="ui-bar">
-    <span id="score-display">VOTES: 0</span>
-    <span id="distance-display">DIST: 0m</span>
+    <span id="score-display">🗳️ 0</span>
+    <span id="distance-display">⚡ NORMAL</span>
     <span id="hi-display">BEST: 0</span>
   </div>
 
-  <div id="instructions">TAP to jump &nbsp;·&nbsp; TAP TWICE for double jump &nbsp;·&nbsp; Collect votes and dodge problems</div>
+  <div id="instructions">SPACE / ↑ to jump &nbsp;·&nbsp; Double-tap for double jump &nbsp;·&nbsp; Collect votes, dodge problems</div>
+
+  <div id="mobile-controls">
+    <div id="mobile-score">VOTES: 0</div>
+    <button id="jump-btn">Jump</button>
+  </div>
   <div id="char-select" style="display:none;">
     <h2>CHOOSE YOUR CANDIDATE</h2>
     <p>SELECT A POLITICIAN TO BEGIN THE CAMPAIGN</p>
     <div class="char-grid" id="char-grid"></div>
   </div>
-  <div id="game-over">
-    <h2>CAMPAIGN OVER</h2>
-    <div class="final-score" id="final-score">VOTES COLLECTED: 0</div>
-    <div class="high-score" id="hi-score-display">BEST: 0</div>
-    <div style="margin-top:8px;">
-      <button class="btn" id="retry-btn">RUN AGAIN</button>
-      <button class="btn secondary" id="change-btn">CHANGE CANDIDATE</button>
-    </div>
+</div>
+
+<div id="game-over">
+  <h2>Campaign Over</h2>
+  <div class="final-score" id="final-score">Votes Collected: 0</div>
+  <div class="high-score" id="hi-score-display">Best: 0</div>
+  <div id="game-over-meta">
+    <div class="meta-pill" id="go-char">—</div>
+    <div class="meta-pill" id="go-power">—</div>
+  </div>
+  <div id="game-over-btns">
+    <button class="btn" id="retry-btn">Run Again</button>
+    <button class="btn secondary" id="change-btn">Change Candidate</button>
   </div>
 </div>
 
@@ -208,223 +748,6 @@ function drawPixelArt(ctx, pixels, x, y, scale) {
     ctx.fillRect(x + px * scale, y + py * scale, scale, scale);
   });
 }
-
-// ─── CHARACTERS ───────────────────────────────────────────────────────────────
-
-// Chief ANC — Madiba shirt, green/gold/black, vote magnet
-function getANCFrames(t) {
-  const frame = Math.floor(t / 8) % 4;
-  const S = '#2C8A3A'; // ANC green shirt
-  const G = '#D4A017'; // gold collar/pattern
-  const K = '#111';    // black outline
-  const F = '#4A2208'; // deep brown skin
-  const P = '#1A1A1A'; // near-black pants
-
-  const body = [
-    // Head
-    [5,0,K],[6,0,K],[7,0,K],[8,0,K],
-    [4,1,K],[5,1,F],[6,1,F],[7,1,F],[8,1,F],[9,1,K],
-    [4,2,K],[5,2,F],[6,2,F],[7,2,F],[8,2,F],[9,2,K],
-    [4,3,K],[5,3,F],[6,3,F],[7,3,F],[8,3,F],[9,3,K],
-    [5,4,K],[6,4,K],[7,4,K],[8,4,K],
-    // Madiba shirt — wide collar, pattern stripe
-    [4,5,G],[5,5,G],[6,5,S],[7,5,S],[8,5,G],[9,5,G],
-    [3,6,K],[4,6,S],[5,6,G],[6,6,S],[7,6,S],[8,6,G],[9,6,S],[10,6,K],
-    [3,7,K],[4,7,S],[5,7,S],[6,7,G],[7,7,G],[8,7,S],[9,7,S],[10,7,K],
-    [3,8,K],[4,8,S],[5,8,S],[6,8,S],[7,8,S],[8,8,S],[9,8,S],[10,8,K],
-    [4,9,K],[5,9,S],[6,9,S],[7,9,S],[8,9,S],[9,9,K],
-    // Pants
-    [4,10,K],[5,10,P],[6,10,P],[7,10,P],[8,10,P],[9,10,K],
-  ];
-
-  const armSets = [
-    [[2,6,K],[3,7,F],[2,8,K],[10,7,K],[11,7,F],[12,8,K]],
-    [[2,7,K],[3,8,F],[2,9,K],[10,6,K],[11,6,F],[12,7,K]],
-    [[2,6,K],[3,7,F],[2,8,K],[10,7,K],[11,8,F],[12,9,K]],
-    [[2,7,K],[3,6,F],[2,6,K],[10,8,K],[11,7,F],[12,7,K]],
-  ];
-
-  const legSets = [
-    [[5,11,K],[5,12,P],[5,13,K],[4,13,K],[8,11,K],[8,12,P],[9,12,K],[9,13,K]],
-    [[5,11,K],[4,12,P],[4,13,K],[3,13,K],[8,11,K],[9,12,P],[9,13,K],[10,13,K]],
-    [[5,11,K],[5,12,P],[6,13,K],[7,13,K],[8,11,K],[8,12,P],[7,12,K],[7,13,K]],
-    [[5,11,K],[6,12,P],[6,13,K],[7,13,K],[8,11,K],[7,12,P],[8,12,K],[8,13,K]],
-  ];
-
-  return [...body, ...armSets[frame], ...legSets[frame]];
-}
-
-// Captain VF — khaki outfit, wide boere hat, orange accents
-function getVFFrames(t) {
-  const frame = Math.floor(t / 8) % 4;
-  const KH = '#C8860A'; // orange VF accent
-  const KK = '#8B7340'; // khaki
-  const KD = '#6B5520'; // dark khaki
-  const K  = '#111';
-  const F  = '#D4A878'; // skin (lighter)
-  const HT = '#5A4010'; // hat brown
-
-  const body = [
-    // Wide boere hat
-    [3,0,HT],[4,0,HT],[5,0,HT],[6,0,HT],[7,0,HT],[8,0,HT],[9,0,HT],[10,0,HT],
-    [4,1,HT],[5,1,KH],[6,1,KH],[7,1,KH],[8,1,KH],[9,1,HT],
-    // Head under hat
-    [4,2,K],[5,2,F],[6,2,F],[7,2,F],[8,2,F],[9,2,K],
-    [4,3,K],[5,3,F],[6,3,F],[7,3,F],[8,3,F],[9,3,K],
-    [5,4,K],[6,4,K],[7,4,K],[8,4,K],
-    // Khaki shirt with orange shoulder stripe
-    [4,5,KH],[5,5,KK],[6,5,KK],[7,5,KK],[8,5,KK],[9,5,KH],
-    [3,6,K],[4,6,KK],[5,6,KD],[6,6,KK],[7,6,KK],[8,6,KD],[9,6,KK],[10,6,K],
-    [3,7,K],[4,7,KK],[5,7,KK],[6,7,KK],[7,7,KK],[8,7,KK],[9,7,KK],[10,7,K],
-    [3,8,K],[4,8,KK],[5,8,KK],[6,8,KK],[7,8,KK],[8,8,KK],[9,8,KK],[10,8,K],
-    [4,9,K],[5,9,KK],[6,9,KK],[7,9,KK],[8,9,KK],[9,9,K],
-    // Khaki pants
-    [4,10,K],[5,10,KD],[6,10,KD],[7,10,KD],[8,10,KD],[9,10,K],
-  ];
-
-  const armSets = [
-    [[2,6,K],[3,7,KK],[2,8,K],[10,7,K],[11,7,KK],[12,8,K]],
-    [[2,7,K],[3,8,KK],[2,9,K],[10,6,K],[11,6,KK],[12,7,K]],
-    [[2,6,K],[3,7,KK],[2,8,K],[10,7,K],[11,8,KK],[12,9,K]],
-    [[2,7,K],[3,6,KK],[2,6,K],[10,8,K],[11,7,KK],[12,7,K]],
-  ];
-
-  const legSets = [
-    [[5,11,K],[5,12,KD],[5,13,K],[4,13,K],[8,11,K],[8,12,KD],[9,12,K],[9,13,K]],
-    [[5,11,K],[4,12,KD],[4,13,K],[3,13,K],[8,11,K],[9,12,KD],[9,13,K],[10,13,K]],
-    [[5,11,K],[5,12,KD],[6,13,K],[7,13,K],[8,11,K],[8,12,KD],[7,12,K],[7,13,K]],
-    [[5,11,K],[6,12,KD],[6,13,K],[7,13,K],[8,11,K],[7,12,KD],[8,12,K],[8,13,K]],
-  ];
-
-  return [...body, ...armSets[frame], ...legSets[frame]];
-}
-
-// Comrade EFF — red beret, red overalls, fist raised
-function getEFFFrames(t) {
-  const frame = Math.floor(t / 8) % 4;
-  const R  = '#CC1A1A'; // EFF red
-  const RD = '#8B0000'; // dark red
-  const K  = '#111';
-  const F  = '#3D1A06'; // rich dark brown skin
-  const BR = '#CC1A1A'; // beret red
-
-  const body = [
-    // Red beret — flat on top, tilted
-    [4,0,BR],[5,0,BR],[6,0,BR],[7,0,BR],[8,0,BR],[9,0,BR],
-    [3,1,BR],[4,1,BR],[5,1,BR],[6,1,BR],[7,1,BR],[8,1,BR],[9,1,K],
-    // Head
-    [4,2,K],[5,2,F],[6,2,F],[7,2,F],[8,2,F],[9,2,K],
-    [4,3,K],[5,3,F],[6,3,F],[7,3,F],[8,3,F],[9,3,K],
-    [5,4,K],[6,4,K],[7,4,K],[8,4,K],
-    // Red overalls — bib top
-    [4,5,K],[5,5,R],[6,5,R],[7,5,R],[8,5,R],[9,5,K],
-    [3,6,K],[4,6,R],[5,6,R],[6,6,RD],[7,6,RD],[8,6,R],[9,6,R],[10,6,K],
-    [3,7,K],[4,7,R],[5,7,R],[6,7,R],[7,7,R],[8,7,R],[9,7,R],[10,7,K],
-    [3,8,K],[4,8,R],[5,8,R],[6,8,R],[7,8,R],[8,8,R],[9,8,R],[10,8,K],
-    [4,9,K],[5,9,R],[6,9,R],[7,9,R],[8,9,R],[9,9,K],
-    [4,10,K],[5,10,RD],[6,10,RD],[7,10,RD],[8,10,RD],[9,10,K],
-  ];
-
-  // EFF raises fist on frame 0 and 2
-  const armSets = [
-    [[2,4,K],[3,5,F],[2,4,K],[2,5,K],[10,7,K],[11,7,R],[12,8,K]],  // fist raised left
-    [[2,7,K],[3,8,R],[2,9,K],[10,6,K],[11,6,R],[12,7,K]],
-    [[2,4,K],[3,5,F],[2,5,K],[10,7,K],[11,8,R],[12,9,K]],           // fist raised again
-    [[2,7,K],[3,6,R],[2,6,K],[10,8,K],[11,7,R],[12,7,K]],
-  ];
-
-  const legSets = [
-    [[5,11,K],[5,12,RD],[5,13,K],[4,13,K],[8,11,K],[8,12,RD],[9,12,K],[9,13,K]],
-    [[5,11,K],[4,12,RD],[4,13,K],[3,13,K],[8,11,K],[9,12,RD],[9,13,K],[10,13,K]],
-    [[5,11,K],[5,12,RD],[6,13,K],[7,13,K],[8,11,K],[8,12,RD],[7,12,K],[7,13,K]],
-    [[5,11,K],[6,12,RD],[6,13,K],[7,13,K],[8,11,K],[7,12,RD],[8,12,K],[8,13,K]],
-  ];
-
-  return [...body, ...armSets[frame], ...legSets[frame]];
-}
-
-// Leader DA — smart blue suit, white shirt, blue tie
-function getDAFrames(t) {
-  const frame = Math.floor(t / 8) % 4;
-  const B  = '#1A5EA8'; // DA blue suit
-  const BD = '#0F3D70'; // dark blue
-  const W  = '#F0F0F0'; // white shirt
-  const TI = '#1A5EA8'; // tie
-  const K  = '#111';
-  const F  = '#D4A878'; // skin
-
-  const body = [
-    // Head — neat, no hat
-    [5,0,K],[6,0,K],[7,0,K],[8,0,K],
-    [4,1,K],[5,1,F],[6,1,F],[7,1,F],[8,1,F],[9,1,K],
-    [4,2,K],[5,2,F],[6,2,F],[7,2,F],[8,2,F],[9,2,K],
-    [4,3,K],[5,3,F],[6,3,F],[7,3,F],[8,3,F],[9,3,K],
-    [5,4,K],[6,4,K],[7,4,K],[8,4,K],
-    // White shirt + blue jacket lapels
-    [4,5,B],[5,5,W],[6,5,W],[7,5,W],[8,5,W],[9,5,B],
-    [3,6,K],[4,6,B],[5,6,W],[6,6,TI],[7,6,TI],[8,6,W],[9,6,B],[10,6,K],
-    [3,7,K],[4,7,B],[5,7,B],[6,7,TI],[7,7,TI],[8,7,B],[9,7,B],[10,7,K],
-    [3,8,K],[4,8,B],[5,8,B],[6,8,BD],[7,8,BD],[8,8,B],[9,8,B],[10,8,K],
-    [4,9,K],[5,9,B],[6,9,B],[7,9,B],[8,9,B],[9,9,K],
-    // Suit trousers
-    [4,10,K],[5,10,BD],[6,10,BD],[7,10,BD],[8,10,BD],[9,10,K],
-  ];
-
-  const armSets = [
-    [[2,6,K],[3,7,B],[2,7,K],[10,7,K],[11,7,B],[12,8,K]],
-    [[2,7,K],[3,8,B],[2,9,K],[10,6,K],[11,6,B],[12,7,K]],
-    [[2,6,K],[3,7,B],[2,8,K],[10,7,K],[11,8,B],[12,9,K]],
-    [[2,7,K],[3,6,B],[2,6,K],[10,8,K],[11,7,B],[12,7,K]],
-  ];
-
-  const legSets = [
-    [[5,11,K],[5,12,BD],[5,13,K],[4,13,K],[8,11,K],[8,12,BD],[9,12,K],[9,13,K]],
-    [[5,11,K],[4,12,BD],[4,13,K],[3,13,K],[8,11,K],[9,12,BD],[9,13,K],[10,13,K]],
-    [[5,11,K],[5,12,BD],[6,13,K],[7,13,K],[8,11,K],[8,12,BD],[7,12,K],[7,13,K]],
-    [[5,11,K],[6,12,BD],[6,13,K],[7,13,K],[8,11,K],[7,12,BD],[8,12,K],[8,13,K]],
-  ];
-
-  return [...body, ...armSets[frame], ...legSets[frame]];
-}
-
-const CHARACTERS = [
-  {
-    id: 'anc',
-    name: 'CHIEF ANC',
-    party: 'AFRICAN NAT. CONGRESS',
-    power: 'Vote magnet',
-    color: '#2C8A3A',
-    voteRadius: 80,
-    getFrames: getANCFrames
-  },
-  {
-    id: 'vf',
-    name: 'CAPTAIN VF',
-    party: 'VRYHEIDSFRONT PLUS',
-    power: 'Higher jump',
-    color: '#C8860A',
-    jumpHeight: 1.25,
-    getFrames: getVFFrames
-  },
-  {
-    id: 'eff',
-    name: 'COMRADE EFF',
-    party: 'ECON. FREEDOM FIGHTERS',
-    power: 'Faster speed',
-    color: '#CC1A1A',
-    speedBoost: 1.2,
-    getFrames: getEFFFrames
-  },
-  {
-    id: 'da',
-    name: 'LEADER DA',
-    party: 'DEMOCRATIC ALLIANCE',
-    power: 'Double jump boost',
-    color: '#1A5EA8',
-    jumpBoost: 1.15,
-    getFrames: getDAFrames
-  }
-];
 
 // ─── DRAW: ENVELOPE (vote collectible) ───────────────────────────────────────
 function drawEnvelope(ctx, x, y, t) {
@@ -926,30 +1249,37 @@ function drawBackground(ctx, scrollX) {
 // ─── LOADSHEDDING DARKNESS OVERLAY ───────────────────────────────────────────
 function drawLoadsheddingOverlay(ctx, alpha, playerX, playerY) {
   if (alpha <= 0) return;
-  // Full dark overlay
-  ctx.save();
-  ctx.globalAlpha = alpha * 0.92;
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, 800, 280);
-  ctx.globalAlpha = 1;
 
-  // Cut out a small torch-cone of visibility around the player
   const cx = playerX + 16, cy = playerY - 8;
-  const visRadius = Math.round(60 + (1 - alpha) * 80); // shrinks as darkness deepens
-  const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, visRadius);
-  gradient.addColorStop(0,    `rgba(0,0,0,0)`);
-  gradient.addColorStop(0.55, `rgba(0,0,0,0)`);
-  gradient.addColorStop(1,    `rgba(0,0,0,${alpha * 0.92})`);
-  ctx.globalCompositeOperation = 'destination-out';
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = gradient;
-  ctx.beginPath();
-  ctx.arc(cx, cy, visRadius, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.globalCompositeOperation = 'source-over';
-  ctx.restore();
+  const visRadius = Math.round(110 + (1 - alpha) * 120);
 
-  // Flicker edge when first hitting
+  // Draw the dark mask on an offscreen canvas, then composite onto game
+  const offscreen = document.createElement('canvas');
+  offscreen.width = 800;
+  offscreen.height = 280;
+  const oc = offscreen.getContext('2d');
+
+  // Fill offscreen fully dark
+  oc.fillStyle = `rgba(0,0,0,${alpha * 0.95})`;
+  oc.fillRect(0, 0, 800, 280);
+
+  // Punch a clear hole around the player using destination-out
+  // This erases the darkness — revealing transparency — not the game canvas
+  const hole = oc.createRadialGradient(cx, cy, 0, cx, cy, visRadius);
+  hole.addColorStop(0,    'rgba(0,0,0,1)');
+  hole.addColorStop(0.65, 'rgba(0,0,0,1)');
+  hole.addColorStop(1,    'rgba(0,0,0,0)');
+  oc.globalCompositeOperation = 'destination-out';
+  oc.fillStyle = hole;
+  oc.beginPath();
+  oc.arc(cx, cy, visRadius, 0, Math.PI * 2);
+  oc.fill();
+
+  // Draw the offscreen dark mask (with hole) onto the game canvas
+  // The transparent hole area shows the game scene underneath
+  ctx.drawImage(offscreen, 0, 0);
+
+  // Flicker when first hitting
   if (alpha < 0.5) {
     ctx.save();
     ctx.globalAlpha = (0.5 - alpha) * 0.6 * (Math.random() > 0.5 ? 1 : 0);
@@ -965,6 +1295,7 @@ const ctx = canvas.getContext('2d');
 
 let state = 'select';
 let selectedChar = null;
+let selectedPower = null;
 let score = 0;
 let distance = 0;
 let highScore = parseInt(localStorage.getItem('voterunner_hi') || '0');
@@ -973,7 +1304,7 @@ let scrollX = 0;
 let gameSpeed = 3;
 
 const GROUND_Y = 240;
-let player = { x:80, y:GROUND_Y, vy:0, jumping:false, jumpsLeft:2 };
+let player = { x:80, y:GROUND_Y, vy:0, jumping:false, jumpsLeft:2, voteRadius:30, jumpHeight:1.0, speedBoost:1.0, jumpBoost:1.0, stateCapture:false, stateCaptureUsed:false, stateCaptureNotif:0, eskombribe:false, tenderMultiplier:1 };
 
 let obstacles = [];
 let votes = [];
@@ -989,182 +1320,39 @@ let loadsheddingFading = false;  // are we fading back in?
 const OBSTACLE_TYPES = ['pothole', 'taxi', 'loadshedding'];
 
 // ─── CHAR SELECT — drawn on canvas ───────────────────────────────────────────
-function buildCharSelect() {
-  // No-op: char select is now drawn on canvas in drawCharSelect()
-}
 
-function drawCharSelect() {
-  const W = 800, H = 280;
 
-  // Dark overlay
-  ctx.fillStyle = '#18181Af8';
-  ctx.fillRect(0, 0, W, H);
-
-  // Detect if canvas is being displayed narrow (mobile)
-  const displayWidth = canvas.getBoundingClientRect().width;
-  const isMobile = displayWidth < 500;
-
-  if (isMobile) {
-    // ── 2×2 GRID LAYOUT ────────────────────────────────────────────────────
-    const gap = 8;
-    const cardW = Math.floor((W - gap * 3) / 2);
-    const cardH = Math.floor((H - gap * 3) / 2);
-
-    ctx.fillStyle = '#C8941E';
-    ctx.font = 'bold 20px Courier New';
-    ctx.textAlign = 'center';
-    ctx.fillText('WHO HAS YOUR VOTE?', W / 2, 22);
-
-    CHARACTERS.forEach((char, i) => {
-      const col = i % 2;
-      const row = Math.floor(i / 2);
-      const cx = gap + col * (cardW + gap);
-      const cy = gap * 1.5 + row * (cardH + gap) + 14;
-      const isHovered = charSelectHover === i;
-
-      // Card
-      ctx.fillStyle = isHovered ? '#252528' : '#1A1A1E';
-      ctx.strokeStyle = isHovered ? char.color : '#2E2E34';
-      ctx.lineWidth = isHovered ? 2 : 1;
-      ctx.beginPath();
-      ctx.roundRect(cx, cy, cardW, cardH, 3);
-      ctx.fill(); ctx.stroke();
-
-      // Top bar
-      ctx.fillStyle = char.color + (isHovered ? 'FF' : 'AA');
-      ctx.fillRect(cx + 1, cy + 1, cardW - 2, 5);
-
-      // Sprite — scale 5, centred
-      const textStripH = 48;
-      const spriteScale = 5;
-      const spriteW = 14 * spriteScale;
-      const spriteAreaH = cardH - textStripH - 6;
-      const spriteX = cx + Math.floor((cardW - spriteW) / 2) - 4;
-      const spriteY = cy + 6 + Math.floor((spriteAreaH - 14 * spriteScale) / 2);
-      drawPixelArt(ctx, char.getFrames(Math.floor(t / 8)), spriteX, spriteY, spriteScale);
-
-      // Text strip
-      const textY = cy + cardH - textStripH;
-      ctx.fillStyle = char.color + '44';
-      ctx.fillRect(cx + 8, textY, cardW - 16, 1);
-
-      ctx.fillStyle = char.color;
-      ctx.font = 'bold 14px Courier New';
-      ctx.textAlign = 'center';
-      ctx.fillText(char.name, cx + cardW / 2, textY + 14);
-
-      ctx.fillStyle = '#4A9880';
-      ctx.font = '11px Courier New';
-      ctx.fillText('★ ' + char.power.toUpperCase(), cx + cardW / 2, textY + 32);
-    });
-
-  } else {
-    // ── 4-ACROSS LAYOUT (desktop) ──────────────────────────────────────────
-    ctx.fillStyle = '#C8941E';
-    ctx.font = 'bold 16px Courier New';
-    ctx.textAlign = 'center';
-    ctx.fillText('WHO HAS YOUR VOTE?', W / 2, 22);
-    ctx.fillStyle = '#555';
-    ctx.font = '10px Courier New';
-    ctx.fillText('CLICK TO SELECT', W / 2, 34);
-
-    const gap = 6;
-    const cardW = Math.floor((W - gap * 5) / 4);
-    const cardH = H - 40;
-    const cy = 38;
-
-    CHARACTERS.forEach((char, i) => {
-      const cx = gap + i * (cardW + gap);
-      const isHovered = charSelectHover === i;
-
-      ctx.fillStyle = isHovered ? '#252528' : '#1A1A1E';
-      ctx.strokeStyle = isHovered ? char.color : '#2E2E34';
-      ctx.lineWidth = isHovered ? 2 : 1;
-      ctx.beginPath();
-      ctx.roundRect(cx, cy, cardW, cardH, 3);
-      ctx.fill(); ctx.stroke();
-
-      ctx.fillStyle = char.color + (isHovered ? 'FF' : 'BB');
-      ctx.fillRect(cx + 1, cy + 1, cardW - 2, 5);
-
-      const textStripH = 62;
-      const spriteScale = 6;
-      const spriteW = 14 * spriteScale;
-      const spriteAreaH = cardH - textStripH - 8;
-      const spriteX = cx + Math.floor((cardW - spriteW) / 2) - 4;
-      const spriteY = cy + 8 + Math.floor((spriteAreaH - 14 * spriteScale) / 2);
-      drawPixelArt(ctx, char.getFrames(Math.floor(t / 8)), spriteX, spriteY, spriteScale);
-
-      const textY = cy + cardH - textStripH;
-      ctx.fillStyle = char.color + '44';
-      ctx.fillRect(cx + 8, textY, cardW - 16, 1);
-
-      ctx.fillStyle = char.color;
-      ctx.font = 'bold 11px Courier New';
-      ctx.textAlign = 'center';
-      ctx.fillText(char.name, cx + cardW / 2, textY + 12);
-
-      ctx.fillStyle = '#888';
-      ctx.font = '9px Courier New';
-      const words = char.party.split(' ');
-      const mid = Math.ceil(words.length / 2);
-      ctx.fillText(words.slice(0, mid).join(' '), cx + cardW / 2, textY + 26);
-      ctx.fillText(words.slice(mid).join(' '), cx + cardW / 2, textY + 38);
-
-      ctx.fillStyle = '#4A9880';
-      ctx.font = '9px Courier New';
-      ctx.fillText('★ ' + char.power.toUpperCase(), cx + cardW / 2, textY + 52);
-    });
-  }
-
-  ctx.textAlign = 'left';
-}
-
-// Track hover for char select
-let charSelectHover = -1;
-
-function getCharSelectIndex(mouseX, mouseY) {
-  const displayWidth = canvas.getBoundingClientRect().width;
-  const isMobile = displayWidth < 500;
-
-  if (isMobile) {
-    const gap = 8;
-    const cardW = Math.floor((800 - gap * 3) / 2);
-    const cardH = Math.floor((280 - gap * 3) / 2);
-    for (let i = 0; i < 4; i++) {
-      const col = i % 2;
-      const row = Math.floor(i / 2);
-      const cx = gap + col * (cardW + gap);
-      const cy = gap * 1.5 + row * (cardH + gap) + 14;
-      if (mouseX >= cx && mouseX <= cx + cardW && mouseY >= cy && mouseY <= cy + cardH) {
-        return i;
-      }
-    }
-  } else {
-    const gap = 6;
-    const cardW = Math.floor((800 - gap * 5) / 4);
-    const cardH = 280 - 40;
-    const cy = 38;
-    for (let i = 0; i < 4; i++) {
-      const cx = gap + i * (cardW + gap);
-      if (mouseX >= cx && mouseX <= cx + cardW && mouseY >= cy && mouseY <= cy + cardH) {
-        return i;
-      }
-    }
-  }
-  return -1;
-}
 
 // ─── START / RESET ────────────────────────────────────────────────────────────
-function startGame(char) {
+function startGame(char, power) {
   selectedChar = char;
+  selectedPower = power;
   state = 'playing';
   score = 0; distance = 0; scrollX = 0; gameSpeed = 3; t = 0;
   obstacles = []; votes = []; particles = [];
   nextObstacle = 120; nextVote = 60;
   player.y = GROUND_Y; player.vy = 0; player.jumping = false; player.jumpsLeft = 2;
+  // Reset all power stats
+  player.voteRadius = 30;
+  player.jumpHeight = 1.0;
+  player.speedBoost = 1.0;
+  player.jumpBoost = 1.0;
+  player.stateCaptureUsed = false;
+  player.eskombribe = false;
+  player.tenderMultiplier = 1;
+  // Apply selected power by effect name
+  if (power) {
+    switch(power.effect) {
+      case 'envelopes': player.voteRadius = 80; break;
+      case 'lightning': player.eskombribe = true; break;
+      case 'dollar':    player.tenderMultiplier = 2; break;
+      case 'shield':    player.stateCaptureUsed = false; player.stateCapture = true; break;
+      case 'notes':     player.jumpBoost = 1.15; player.jumpHeight = 1.3; break;
+    }
+  }
   loadsheddingAlpha = 0; loadsheddingTimer = 0; loadsheddingFading = false;
-  document.getElementById('char-select').style.display = 'none';
+  document.getElementById('rtv-select').classList.remove('active');
+  document.getElementById('game-container').style.display = '';
   document.getElementById('game-over').style.display = 'none';
 }
 
@@ -1173,8 +1361,8 @@ function doJump() {
   if (state !== 'playing') return;
   if (player.jumpsLeft > 0) {
     let jumpPower = -11;
-    if (selectedChar.jumpBoost) jumpPower *= selectedChar.jumpBoost;
-    if (selectedChar.jumpHeight && player.jumpsLeft === 2) jumpPower *= selectedChar.jumpHeight;
+    if (player.jumpBoost && player.jumpBoost > 1) jumpPower *= player.jumpBoost;
+    if (player.jumpHeight && player.jumpHeight > 1 && player.jumpsLeft === 2) jumpPower *= player.jumpHeight;
     player.vy = jumpPower;
     player.jumpsLeft--;
     player.jumping = true;
@@ -1193,8 +1381,14 @@ function spawnParticles(x, y, color, count) {
 function endGame() {
   state = 'gameover';
   if (score > highScore) { highScore = score; localStorage.setItem('voterunner_hi', highScore); }
-  document.getElementById('final-score').textContent = `VOTES COLLECTED: ${score}`;
-  document.getElementById('hi-score-display').textContent = `BEST: ${highScore}`;
+  document.getElementById('final-score').textContent = `Votes Collected: ${score}`;
+  document.getElementById('hi-score-display').textContent = `Best: ${highScore}`;
+  // Populate meta pills
+  if (selectedChar) document.getElementById('go-char').textContent = selectedChar.name;
+  if (selectedPower) document.getElementById('go-power').textContent = selectedPower.name;
+  // Style pills with character/power colour
+  if (selectedChar) document.getElementById('go-char').style.borderColor = selectedChar.color;
+  if (selectedPower) document.getElementById('go-power').style.borderColor = selectedPower.color;
   document.getElementById('game-over').style.display = 'flex';
 }
 
@@ -1203,7 +1397,7 @@ function update() {
   if (state !== 'playing') return;
   t++;
   if (t % 300 === 0) gameSpeed = Math.min(gameSpeed + 0.3, 9);
-  const speed = selectedChar.speedBoost ? gameSpeed * selectedChar.speedBoost : gameSpeed;
+  const speed = player.speedBoost > 1 ? gameSpeed * player.speedBoost : gameSpeed;
   scrollX += speed;
   distance = Math.floor(scrollX / 10);
 
@@ -1237,14 +1431,14 @@ function update() {
   obstacles = obstacles.filter(ob => ob.x > -80);
 
   // Move + collect envelopes
-  const voteRadius = selectedChar.voteRadius || 30;
+  const voteRadius = player.voteRadius || 30;
   votes = votes.filter(v => {
     v.x -= speed;
     const dx = (player.x + 10) - (v.x + 11);
     const dy = (player.y - 8) - (v.y + 8);
     const dist = Math.sqrt(dx*dx + dy*dy);
     if (dist < voteRadius) { v.x += dx * 0.18; v.y += dy * 0.18; }
-    if (dist < 18) { score++; spawnParticles(v.x+11, v.y+8, '#f5c518cc', 8); return false; }
+    if (dist < 18) { score += (player.tenderMultiplier||1); spawnParticles(v.x+11, v.y+8, '#f5c518cc', 8); return false; }
     return v.x > -30;
   });
 
@@ -1252,29 +1446,38 @@ function update() {
   const px = player.x + 3, pw = 10, py = player.y - 14, ph = 14;
   obstacles.forEach(ob => {
     if (ob.type === 'pothole') {
-      // Only collide if player is on the ground and over the hole
       if (player.y >= GROUND_Y - 2) {
-        if (px < ob.x + ob.w - 4 && px + pw > ob.x + 4) endGame();
+        if (px < ob.x + ob.w - 4 && px + pw > ob.x + 4) {
+          if (player.stateCapture && !player.stateCaptureUsed) {
+            player.stateCaptureUsed = true;
+            player.stateCaptureNotif = 120;
+            obstacles = obstacles.filter(o => o !== ob);
+            spawnParticles(ob.x + 25, GROUND_Y - 10, '#8B44CCcc', 16);
+          } else { endGame(); }
+        }
       }
     } else if (ob.type === 'loadshedding') {
-      // Hitting generator triggers darkness, not instant death
-      if (loadsheddingAlpha === 0 && loadsheddingTimer === 0) {
+      if (loadsheddingAlpha === 0 && loadsheddingTimer === 0 && !player.eskombribe) {
         const ox = ob.x + 4, ow = ob.w - 8;
         const oy = GROUND_Y - ob.h, oh = ob.h;
         if (px < ox + ow && px + pw > ox && py < oy + oh && py + ph > oy) {
-          // Trigger loadshedding effect
-          loadsheddingTimer = 420; // ~7 seconds at 60fps
+          loadsheddingTimer = 420;
           loadsheddingFading = false;
-          obstacles = obstacles.filter(o => o !== ob); // remove the generator
+          obstacles = obstacles.filter(o => o !== ob);
           spawnParticles(ob.x + 20, GROUND_Y - 20, '#e67e22cc', 16);
-
         }
       }
     } else {
-      // Taxi — solid collision
       const ox = ob.x + 4, ow = ob.w - 8;
       const oy = GROUND_Y - ob.h, oh = ob.h;
-      if (px < ox + ow && px + pw > ox && py < oy + oh && py + ph > oy) endGame();
+      if (px < ox + ow && px + pw > ox && py < oy + oh && py + ph > oy) {
+        if (player.stateCapture && !player.stateCaptureUsed) {
+          player.stateCaptureUsed = true;
+          player.stateCaptureNotif = 120;
+          obstacles = obstacles.filter(o => o !== ob);
+          spawnParticles(ob.x + 30, GROUND_Y - 30, '#8B44CCcc', 16);
+        } else { endGame(); }
+      }
     }
   });
 
@@ -1295,14 +1498,19 @@ function update() {
     }
   }
 
+  // State capture notification timer
+  if (player.stateCaptureNotif > 0) player.stateCaptureNotif--;
+
   // Particles
   particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life--; p.vy += 0.1; });
   particles = particles.filter(p => p.life > 0);
 
   // UI
-  document.getElementById('score-display').textContent = `VOTES: ${score}`;
-  document.getElementById('distance-display').textContent = `DIST: ${distance}m`;
-  document.getElementById('hi-display').textContent = `BEST: ${highScore}`;
+  document.getElementById('score-display').textContent = `🗳️ ${score}`;
+  const speedLabel = gameSpeed < 4 ? 'Normal' : gameSpeed < 6 ? 'Fast' : gameSpeed < 8 ? 'Turbo' : '🔥 Max';
+  document.getElementById('distance-display').textContent = `⚡ ${speedLabel}`;
+  document.getElementById('hi-display').textContent = `Best: ${highScore}`;
+  updateMobileScore();
 }
 
 // ─── DRAW ─────────────────────────────────────────────────────────────────────
@@ -1310,10 +1518,6 @@ function draw() {
   ctx.clearRect(0, 0, 800, 280);
   drawBackground(ctx, scrollX);
 
-  if (state === 'select') {
-    drawCharSelect();
-    return;
-  }
 
   if (state === 'playing' || state === 'gameover') {
     // Envelopes
@@ -1355,6 +1559,24 @@ function draw() {
       ctx.textAlign = 'left';
     }
 
+    // State Capture used notification
+    if (player.stateCaptureNotif > 0) {
+      const alpha = Math.min(1, player.stateCaptureNotif / 30);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.font = 'bold 12px Courier New';
+      ctx.textAlign = 'center';
+      const scText = '🏛️ STATE CAPTURE USED';
+      const scW = ctx.measureText(scText).width;
+      ctx.fillStyle = '#4a1f7acc';
+      ctx.beginPath();
+      ctx.roundRect(400 - scW/2 - 12, 36, scW + 24, 22, 3);
+      ctx.fill();
+      ctx.fillStyle = '#9955EE';
+      ctx.fillText(scText, 400, 52);
+      ctx.restore();
+    }
+
     // On-screen loadshedding warning
     if (loadsheddingAlpha > 0) {
       const pulse = 0.65 + 0.35 * Math.abs(Math.sin(t * 0.08));
@@ -1378,60 +1600,346 @@ function draw() {
 // ─── LOOP ─────────────────────────────────────────────────────────────────────
 function loop() { update(); draw(); requestAnimationFrame(loop); }
 
+// ─── PIXEL ART ────────────────────────────────────────────────────────────────
+
+function getANCFrames(t) {
+  const f=Math.floor(t/8)%4,S='#2C8A3A',G='#D4A017',K='#111',F='#4A2208',P='#1A1A1A';
+  const b=[[5,0,K],[6,0,K],[7,0,K],[8,0,K],[4,1,K],[5,1,F],[6,1,F],[7,1,F],[8,1,F],[9,1,K],[4,2,K],[5,2,F],[6,2,F],[7,2,F],[8,2,F],[9,2,K],[4,3,K],[5,3,F],[6,3,F],[7,3,F],[8,3,F],[9,3,K],[5,4,K],[6,4,K],[7,4,K],[8,4,K],[4,5,G],[5,5,G],[6,5,S],[7,5,S],[8,5,G],[9,5,G],[3,6,K],[4,6,S],[5,6,G],[6,6,S],[7,6,S],[8,6,G],[9,6,S],[10,6,K],[3,7,K],[4,7,S],[5,7,S],[6,7,G],[7,7,G],[8,7,S],[9,7,S],[10,7,K],[3,8,K],[4,8,S],[5,8,S],[6,8,S],[7,8,S],[8,8,S],[9,8,S],[10,8,K],[4,9,K],[5,9,S],[6,9,S],[7,9,S],[8,9,S],[9,9,K],[4,10,K],[5,10,P],[6,10,P],[7,10,P],[8,10,P],[9,10,K]];
+  const a=[[[2,6,K],[3,7,F],[2,8,K],[10,7,K],[11,7,F],[12,8,K]],[[2,7,K],[3,8,F],[2,9,K],[10,6,K],[11,6,F],[12,7,K]],[[2,6,K],[3,7,F],[2,8,K],[10,7,K],[11,8,F],[12,9,K]],[[2,7,K],[3,6,F],[2,6,K],[10,8,K],[11,7,F],[12,7,K]]];
+  const l=[[[5,11,K],[5,12,P],[5,13,K],[4,13,K],[8,11,K],[8,12,P],[9,12,K],[9,13,K]],[[5,11,K],[4,12,P],[4,13,K],[3,13,K],[8,11,K],[9,12,P],[9,13,K],[10,13,K]],[[5,11,K],[5,12,P],[6,13,K],[7,13,K],[8,11,K],[8,12,P],[7,12,K],[7,13,K]],[[5,11,K],[6,12,P],[6,13,K],[7,13,K],[8,11,K],[7,12,P],[8,12,K],[8,13,K]]];
+  return [...b,...a[f],...l[f]];
+}
+function getVFFrames(t) {
+  const f=Math.floor(t/8)%4,KH='#C8860A',KK='#8B7340',KD='#6B5520',K='#111',F='#D4A878',HT='#5A4010';
+  const b=[[3,0,HT],[4,0,HT],[5,0,HT],[6,0,HT],[7,0,HT],[8,0,HT],[9,0,HT],[10,0,HT],[4,1,HT],[5,1,KH],[6,1,KH],[7,1,KH],[8,1,KH],[9,1,HT],[4,2,K],[5,2,F],[6,2,F],[7,2,F],[8,2,F],[9,2,K],[4,3,K],[5,3,F],[6,3,F],[7,3,F],[8,3,F],[9,3,K],[5,4,K],[6,4,K],[7,4,K],[8,4,K],[4,5,KH],[5,5,KK],[6,5,KK],[7,5,KK],[8,5,KK],[9,5,KH],[3,6,K],[4,6,KK],[5,6,KD],[6,6,KK],[7,6,KK],[8,6,KD],[9,6,KK],[10,6,K],[3,7,K],[4,7,KK],[5,7,KK],[6,7,KK],[7,7,KK],[8,7,KK],[9,7,KK],[10,7,K],[3,8,K],[4,8,KK],[5,8,KK],[6,8,KK],[7,8,KK],[8,8,KK],[9,8,KK],[10,8,K],[4,9,K],[5,9,KK],[6,9,KK],[7,9,KK],[8,9,KK],[9,9,K],[4,10,K],[5,10,KD],[6,10,KD],[7,10,KD],[8,10,KD],[9,10,K]];
+  const a=[[[2,6,K],[3,7,KK],[2,8,K],[10,7,K],[11,7,KK],[12,8,K]],[[2,7,K],[3,8,KK],[2,9,K],[10,6,K],[11,6,KK],[12,7,K]],[[2,6,K],[3,7,KK],[2,8,K],[10,7,K],[11,8,KK],[12,9,K]],[[2,7,K],[3,6,KK],[2,6,K],[10,8,K],[11,7,KK],[12,7,K]]];
+  const l=[[[5,11,K],[5,12,KD],[5,13,K],[4,13,K],[8,11,K],[8,12,KD],[9,12,K],[9,13,K]],[[5,11,K],[4,12,KD],[4,13,K],[3,13,K],[8,11,K],[9,12,KD],[9,13,K],[10,13,K]],[[5,11,K],[5,12,KD],[6,13,K],[7,13,K],[8,11,K],[8,12,KD],[7,12,K],[7,13,K]],[[5,11,K],[6,12,KD],[6,13,K],[7,13,K],[8,11,K],[7,12,KD],[8,12,K],[8,13,K]]];
+  return [...b,...a[f],...l[f]];
+}
+function getEFFFrames(t) {
+  const f=Math.floor(t/8)%4,R='#CC1A1A',RD='#8B0000',K='#111',F='#3D1A06';
+  const b=[[4,0,R],[5,0,R],[6,0,R],[7,0,R],[8,0,R],[9,0,R],[3,1,R],[4,1,R],[5,1,R],[6,1,R],[7,1,R],[8,1,R],[9,1,K],[4,2,K],[5,2,F],[6,2,F],[7,2,F],[8,2,F],[9,2,K],[4,3,K],[5,3,F],[6,3,F],[7,3,F],[8,3,F],[9,3,K],[5,4,K],[6,4,K],[7,4,K],[8,4,K],[4,5,K],[5,5,R],[6,5,R],[7,5,R],[8,5,R],[9,5,K],[3,6,K],[4,6,R],[5,6,R],[6,6,RD],[7,6,RD],[8,6,R],[9,6,R],[10,6,K],[3,7,K],[4,7,R],[5,7,R],[6,7,R],[7,7,R],[8,7,R],[9,7,R],[10,7,K],[3,8,K],[4,8,R],[5,8,R],[6,8,R],[7,8,R],[8,8,R],[9,8,R],[10,8,K],[4,9,K],[5,9,R],[6,9,R],[7,9,R],[8,9,R],[9,9,K],[4,10,K],[5,10,RD],[6,10,RD],[7,10,RD],[8,10,RD],[9,10,K]];
+  const a=[[[2,4,K],[3,5,F],[2,5,K],[10,7,K],[11,7,R],[12,8,K]],[[2,7,K],[3,8,R],[2,9,K],[10,6,K],[11,6,R],[12,7,K]],[[2,4,K],[3,5,F],[2,5,K],[10,7,K],[11,8,R],[12,9,K]],[[2,7,K],[3,6,R],[2,6,K],[10,8,K],[11,7,R],[12,7,K]]];
+  const l=[[[5,11,K],[5,12,RD],[5,13,K],[4,13,K],[8,11,K],[8,12,RD],[9,12,K],[9,13,K]],[[5,11,K],[4,12,RD],[4,13,K],[3,13,K],[8,11,K],[9,12,RD],[9,13,K],[10,13,K]],[[5,11,K],[5,12,RD],[6,13,K],[7,13,K],[8,11,K],[8,12,RD],[7,12,K],[7,13,K]],[[5,11,K],[6,12,RD],[6,13,K],[7,13,K],[8,11,K],[7,12,RD],[8,12,K],[8,13,K]]];
+  return [...b,...a[f],...l[f]];
+}
+function getDAFrames(t) {
+  const f=Math.floor(t/8)%4,B='#1A5EA8',BD='#0F3D70',W='#F0F0F0',K='#111',F='#D4A878';
+  const b=[[5,0,K],[6,0,K],[7,0,K],[8,0,K],[4,1,K],[5,1,F],[6,1,F],[7,1,F],[8,1,F],[9,1,K],[4,2,K],[5,2,F],[6,2,F],[7,2,F],[8,2,F],[9,2,K],[4,3,K],[5,3,F],[6,3,F],[7,3,F],[8,3,F],[9,3,K],[5,4,K],[6,4,K],[7,4,K],[8,4,K],[4,5,B],[5,5,W],[6,5,W],[7,5,W],[8,5,W],[9,5,B],[3,6,K],[4,6,B],[5,6,W],[6,6,B],[7,6,B],[8,6,W],[9,6,B],[10,6,K],[3,7,K],[4,7,B],[5,7,B],[6,7,B],[7,7,B],[8,7,B],[9,7,B],[10,7,K],[3,8,K],[4,8,B],[5,8,B],[6,8,BD],[7,8,BD],[8,8,B],[9,8,B],[10,8,K],[4,9,K],[5,9,B],[6,9,B],[7,9,B],[8,9,B],[9,9,K],[4,10,K],[5,10,BD],[6,10,BD],[7,10,BD],[8,10,BD],[9,10,K]];
+  const a=[[[2,6,K],[3,7,B],[2,7,K],[10,7,K],[11,7,B],[12,8,K]],[[2,7,K],[3,8,B],[2,9,K],[10,6,K],[11,6,B],[12,7,K]],[[2,6,K],[3,7,B],[2,8,K],[10,7,K],[11,8,B],[12,9,K]],[[2,7,K],[3,6,B],[2,6,K],[10,8,K],[11,7,B],[12,7,K]]];
+  const l=[[[5,11,K],[5,12,BD],[5,13,K],[4,13,K],[8,11,K],[8,12,BD],[9,12,K],[9,13,K]],[[5,11,K],[4,12,BD],[4,13,K],[3,13,K],[8,11,K],[9,12,BD],[9,13,K],[10,13,K]],[[5,11,K],[5,12,BD],[6,13,K],[7,13,K],[8,11,K],[8,12,BD],[7,12,K],[7,13,K]],[[5,11,K],[6,12,BD],[6,13,K],[7,13,K],[8,11,K],[7,12,BD],[8,12,K],[8,13,K]]];
+  return [...b,...a[f],...l[f]];
+}
+
+// ─── DATA ─────────────────────────────────────────────────────────────────────
+const CHARACTERS = [
+  {
+    name:'CHIEF ANC', party:'AFRICAN NAT. CONGRESS',
+    tagline:'POWER TO THE PEOPLE',
+    color:'#2C8A3A', darkColor:'#1a5224',
+    stats:{ Charisma:80, Promises:58, Scandals:70 },
+    getFrames:getANCFrames
+  },
+  {
+    name:'CAPTAIN VF', party:'VRYHEIDSFRONT PLUS',
+    tagline:'RESTORE AND REBUILD',
+    color:'#C8860A', darkColor:'#7a5006',
+    stats:{ Charisma:70, Promises:95, Scandals:41 },
+    getFrames:getVFFrames
+  },
+  {
+    name:'COMRADE EFF', party:'ECON. FREEDOM FIGHTERS',
+    tagline:'SON OF THE SOIL',
+    color:'#CC1A1A', darkColor:'#7a0f0f',
+    stats:{ Charisma:63, Promises:71, Scandals:75 },
+    getFrames:getEFFFrames
+  },
+  {
+    name:'LEADER DA', party:'DEMOCRATIC ALLIANCE',
+    tagline:"LET'S GET RSA WORKING",
+    color:'#1A5EA8', darkColor:'#0d3464',
+    stats:{ Charisma:72, Promises:68, Scandals:66 },
+    getFrames:getDAFrames
+  },
+];
+
+const POWERS = [
+  { name:'BUY VOTES',        tagline:'DEMOCRACY HAS A PRICE',         desc:'Vote envelopes are magnetically pulled towards you from a much greater distance. You barely need to go out of your way. The votes come to you.',                                                        icon:'🗳️', color:'#C8941E', darkColor:'#7a5a0a', effect:'envelopes' },
+  { name:'ESKOM BRIBE',      tagline:'THE LIGHTS STAY ON FOR YOU',    desc:'When you collide with a generator obstacle, the screen stays fully lit. No darkness, no limited vision. Someone made a call, and the power stays on for you.',                                        icon:'⚡',  color:'#FFB612', darkColor:'#8a6508', effect:'lightning' },
+  { name:'TENDERPRENEURSHIP',tagline:'INFLATE EVERYTHING',            desc:'Every vote envelope you collect counts as two on the scoreboard. The numbers look great on paper. They always do when you write the contract yourself.',                                             icon:'💰',  color:'#2C8A3A', darkColor:'#1a5224', effect:'dollar'    },
+  { name:'STATE CAPTURE',    tagline:'UNTOUCHABLE',                   desc:'Once per run, you can barrel straight through any obstacle without consequence. The taxi, the pothole, the generator. It does not matter. The state works for you.',                                 icon:'🏛️', color:'#8B44CC', darkColor:'#4a1f7a', effect:'shield'    },
+  { name:'ZUMA DANCE',       tagline:'UNPREDICTABLE AND UNSTOPPABLE', desc:"Double jump is unlocked, and the second jump launches you significantly higher than normal. Chaotic, bouncy, and very hard to stop. Just like the man himself.", icon:'🕺',  color:'#CC1A1A', darkColor:'#7a0f0f', effect:'notes'     },
+];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let selPhase = 'char', selCharIdx = 0, selChar = null, selPower = null, selT = 0;
+
+const spriteCanvas = document.getElementById('sprite-canvas');
+const spriteCtx    = spriteCanvas.getContext('2d');
+const backdrop     = document.getElementById('card-backdrop');
+const charName     = document.getElementById('char-name');
+const charParty    = document.getElementById('char-party');
+const charTagline  = document.getElementById('char-tagline');
+const charStats    = document.getElementById('char-stats');
+const charCard     = document.getElementById('char-card');
+
+const dotsEl       = document.getElementById('dots');
+const prevBtn      = document.getElementById('prev-btn');
+const nextBtn      = document.getElementById('next-btn');
+const actionBtn    = document.getElementById('action-btn');
+const backBtn      = document.getElementById('back-btn');
+const subtitleEl   = document.getElementById('subtitle');
+const phaseLabel   = document.getElementById('phase-label');
+
+// ─── SPRITE SIZING ────────────────────────────────────────────────────────────
+function getSpriteScale() {
+  const cardH = charCard.offsetHeight;
+  const available = cardH - 100;
+  return Math.max(6, Math.min(14, Math.floor(available / 14)));
+}
+
+function resizeSprite() {
+  const scale = getSpriteScale();
+  const w = 16 * scale, h = 14 * scale;
+  spriteCanvas.width = w;
+  spriteCanvas.height = h;
+  spriteCanvas.style.width = w + 'px';
+  spriteCanvas.style.height = h + 'px';
+}
+
+// ─── CHAR DISPLAY ─────────────────────────────────────────────────────────────
+function showChar(char, animate) {
+  // Backdrop colour
+  backdrop.style.background = `linear-gradient(160deg, ${char.darkColor} 0%, #0a0a0a 65%)`;
+  charCard.style.borderColor = char.color + '55';
+
+  // Text
+  charName.textContent = char.name;
+  charName.style.color = char.color;
+  charParty.textContent = char.party;
+  charTagline.textContent = char.tagline;
+
+  // Dot colour
+  dotsEl.querySelectorAll('.dot.active').forEach(d => d.style.background = char.color);
+
+  // Stats
+  charStats.innerHTML = '';
+  Object.entries(char.stats).forEach(([label, value]) => {
+    const row = document.createElement('div');
+    row.className = 'stat-row';
+    row.innerHTML = `
+      <div class="stat-label">${label}</div>
+      <div class="stat-track"><div class="stat-fill" style="width:0%;background:${char.color}"></div></div>
+      <div class="stat-value">${value}</div>
+    `;
+    charStats.appendChild(row);
+    // Animate bar in
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        row.querySelector('.stat-fill').style.width = value + '%';
+      });
+    });
+  });
+
+  // Button
+  actionBtn.style.background = char.color;
+  actionBtn.style.color = '#111';
+  actionBtn.disabled = false;
+  actionBtn.textContent = 'SELECT';
+}
+
+// ─── BUILD DOTS ───────────────────────────────────────────────────────────────
+function buildDots(count) {
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === selCharIdx ? ' active' : '');
+    if (i === selCharIdx) d.style.background = CHARACTERS[selCharIdx].color;
+    dotsEl.appendChild(d);
+  }
+}
+
+
+let powerIdx = 0;
+
+const powerBackdrop  = document.getElementById('power-backdrop');
+const powerNameEl    = document.getElementById('power-name');
+const powerTaglineEl = document.getElementById('power-tagline');
+const powerDescEl    = document.getElementById('power-desc-text');
+const powerStatsEl   = document.getElementById('power-stats');
+const powerCardEl    = document.getElementById('power-card');
+
+function showPower(power) {
+  powerBackdrop.style.background = `linear-gradient(160deg, ${power.darkColor} 0%, #0a0a0a 65%)`;
+  powerCardEl.style.borderColor = power.color + '55';
+  powerNameEl.textContent = power.name;
+  powerNameEl.style.color = power.color;
+  powerTaglineEl.textContent = power.tagline;
+  powerDescEl.style.display = 'none';
+
+  dotsEl.querySelectorAll('.dot').forEach((d,j) => {
+    d.classList.toggle('active', j === powerIdx);
+    d.style.background = j === powerIdx ? power.color : 'rgba(255,255,255,0.2)';
+  });
+
+  powerStatsEl.innerHTML = `<p style="font-family:'Teko',sans-serif;font-size:1.05rem;font-weight:400;letter-spacing:1px;color:rgba(255,255,255,0.7);line-height:1.5;text-transform:none;">${power.desc}</p>`;
+
+  actionBtn.style.background = power.color;
+  actionBtn.style.color = '#111';
+  actionBtn.disabled = false;
+  actionBtn.textContent = 'START';
+  selPower = power;
+
+  // Show emoji icon
+  const emojiEl = document.getElementById('power-emoji-display');
+  if (emojiEl) emojiEl.textContent = power.icon;
+}
+
+function goToPower(i) {
+  powerIdx = ((i % POWERS.length) + POWERS.length) % POWERS.length;
+  showPower(POWERS[powerIdx]);
+}
+
+// ─── NAV ──────────────────────────────────────────────────────────────────────
+function goTo(i) {
+  const count = CHARACTERS.length;
+  selCharIdx = ((i % count) + count) % count;
+  dotsEl.querySelectorAll('.dot').forEach((d,j) => {
+    d.classList.toggle('active', j === selCharIdx);
+    d.style.background = j === selCharIdx ? CHARACTERS[selCharIdx].color : 'rgba(255,255,255,0.2)';
+  });
+  showChar(CHARACTERS[selCharIdx], true);
+}
+
+prevBtn.onclick = () => goTo(selCharIdx - 1);
+nextBtn.onclick = () => goTo(selCharIdx + 1);
+
+// Swipe
+const swipeTarget = document.getElementById('char-card');
+let dragX = null, dragDelta = 0, dragging = false;
+swipeTarget.addEventListener('touchstart', e => { dragX = e.touches[0].clientX; dragging = false; }, {passive:true});
+swipeTarget.addEventListener('touchmove', e => {
+  if (!dragX) return;
+  dragDelta = e.touches[0].clientX - dragX;
+  if (Math.abs(dragDelta) > 8) dragging = true;
+}, {passive:true});
+swipeTarget.addEventListener('touchend', () => {
+  if (dragging) { if (dragDelta < -50) goTo(selCharIdx+1); else if (dragDelta > 50) goTo(selCharIdx-1); }
+  dragX = null; dragging = false;
+});
+
+// ─── ACTION / BACK ────────────────────────────────────────────────────────────
+actionBtn.addEventListener('click', () => {
+  if (selPhase === 'char') {
+    selChar = CHARACTERS[selCharIdx];
+    selPhase = 'power';
+    powerIdx = 0;
+    charCard.style.display = 'none';
+    powerCardEl.classList.add('active');
+    subtitleEl.textContent = 'HOW CORRUPT ARE THEY?';
+    phaseLabel.textContent = '2 / 2';
+    backBtn.classList.add('visible');
+    // Rebuild dots for 5 powers
+    buildDots(POWERS.length);
+    showPower(POWERS[0]);
+    // Rewire arrows for power nav
+    prevBtn.onclick = () => goToPower(powerIdx - 1);
+    nextBtn.onclick = () => goToPower(powerIdx + 1);
+    // Swipe on power card
+    powerCardEl.addEventListener('touchstart', e => { dragX = e.touches[0].clientX; dragging = false; }, {passive:true});
+    powerCardEl.addEventListener('touchmove', e => { if (!dragX) return; dragDelta = e.touches[0].clientX - dragX; if (Math.abs(dragDelta) > 8) dragging = true; }, {passive:true});
+    powerCardEl.addEventListener('touchend', () => { if (dragging) { if (dragDelta < -50) goToPower(powerIdx+1); else if (dragDelta > 50) goToPower(powerIdx-1); } dragX = null; dragging = false; });
+  } else {
+    // Launch the game
+    document.getElementById('rtv-select').classList.remove('active');
+    document.getElementById('game-container').style.display = '';
+    if (typeof startGame === 'function') startGame(
+      CHARACTERS[selCharIdx],
+      POWERS[powerIdx]
+    );
+  }
+});
+
+backBtn.addEventListener('click', () => {
+  selPhase = 'char';
+  charCard.style.display = '';
+  powerCardEl.classList.remove('active');
+  subtitleEl.textContent = 'WHO HAS YOUR VOTE?';
+  phaseLabel.textContent = '1 / 2';
+  backBtn.classList.remove('visible');
+  buildDots(CHARACTERS.length);
+  prevBtn.onclick = () => goTo(selCharIdx - 1);
+  nextBtn.onclick = () => goTo(selCharIdx + 1);
+  showChar(CHARACTERS[selCharIdx], false);
+});
+
+// ─── ANIMATION ────────────────────────────────────────────────────────────────
+function animate() {
+  selT++;
+  if (selPhase === 'char') {
+    const char = CHARACTERS[selCharIdx];
+    const scale = getSpriteScale();
+    spriteCtx.clearRect(0, 0, spriteCanvas.width, spriteCanvas.height);
+    drawPixelArt(spriteCtx, char.getFrames(selT), 2, 0, scale);
+  }
+  requestAnimationFrame(animate);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+window.addEventListener('resize', resizeSprite);
+resizeSprite();
+buildDots(CHARACTERS.length);
+showChar(CHARACTERS[0], false);
+animate();
+
+
+// ─── SHOW SELECT SCREEN ──────────────────────────────────────────────────────
+function showSelectScreen() {
+  document.getElementById('rtv-select').classList.add('active');
+  document.getElementById('game-container').style.display = 'none';
+  // Reset to char phase
+  selPhase = 'char'; selCharIdx = 0; powerIdx = 0;
+  charCard.style.display = '';
+  powerCardEl.classList.remove('active');
+  subtitleEl.textContent = 'WHO HAS YOUR VOTE?';
+  phaseLabel.textContent = '1 / 2';
+  backBtn.classList.remove('visible');
+  buildDots(CHARACTERS.length);
+  showChar(CHARACTERS[0], false);
+  resizeSprite();
+}
+
 // ─── INPUT ────────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); doJump(); }
 });
-canvas.addEventListener('click', (e) => {
-  if (state === 'select') {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const mx = (e.clientX - rect.left) * scaleX;
-    const my = (e.clientY - rect.top) * scaleY;
-    const idx = getCharSelectIndex(mx, my);
-    if (idx >= 0) startGame(CHARACTERS[idx]);
-    return;
-  }
-  doJump();
-});
-
-canvas.addEventListener('mousemove', (e) => {
-  if (state !== 'select') return;
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = canvas.width / rect.width;
-  const scaleY = canvas.height / rect.height;
-  const mx = (e.clientX - rect.left) * scaleX;
-  const my = (e.clientY - rect.top) * scaleY;
-  charSelectHover = getCharSelectIndex(mx, my);
-  canvas.style.cursor = charSelectHover >= 0 ? 'pointer' : 'default';
-});
-
-canvas.addEventListener('touchstart', e => {
-  e.preventDefault();
-  if (state === 'select') {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const touch = e.touches[0];
-    const mx = (touch.clientX - rect.left) * scaleX;
-    const my = (touch.clientY - rect.top) * scaleY;
-    const idx = getCharSelectIndex(mx, my);
-    if (idx >= 0) startGame(CHARACTERS[idx]);
-    return;
-  }
-  doJump();
-}, { passive: false });
-document.getElementById('retry-btn').addEventListener('click', () => startGame(selectedChar));
+document.getElementById('retry-btn').addEventListener('click', () => startGame(selectedChar, selectedPower));
 document.getElementById('change-btn').addEventListener('click', () => {
   state = 'select';
-  charSelectHover = -1;
   document.getElementById('game-over').style.display = 'none';
+  showSelectScreen();
 });
 
+// Mobile jump button
+const jumpBtn = document.getElementById('jump-btn');
+const mobileScore = document.getElementById('mobile-score');
+
+jumpBtn.addEventListener('touchstart', e => {
+  e.preventDefault();
+  doJump();
+}, { passive: false });
+jumpBtn.addEventListener('click', () => doJump());
+
+// Keep mobile score in sync
+function updateMobileScore() {
+  mobileScore.textContent = `VOTES: ${score}`;
+}
+
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-buildCharSelect();
+showSelectScreen();
 loop();
+
+
 </script>
 </body>
 </html>
