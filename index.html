@@ -61,18 +61,29 @@
   /* ── HEADER ──────────────────────────────────────────────────────────────── */
   #header {
     background: #000;
-    padding: 14px 20px 12px;
-    text-align: center;
+    padding: 10px 20px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
   }
-
-  h1 {
+  #header-title {
     font-family: 'Teko', sans-serif;
     font-weight: 700;
-    font-size: clamp(1.6rem, 7vw, 2.2rem);
-    letter-spacing: 6px;
+    font-size: clamp(1.3rem, 6vw, 1.8rem);
+    letter-spacing: 5px;
     color: #fff;
     text-transform: uppercase;
+    line-height: 1;
+  }
+  #header-char {
+    font-family: 'Teko', sans-serif;
+    font-weight: 600;
+    font-size: clamp(0.8rem, 3vw, 1rem);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--dim);
     line-height: 1;
   }
 
@@ -92,63 +103,112 @@
   /* ── UI BAR ──────────────────────────────────────────────────────────────── */
   #ui-bar {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 8px 16px;
-    font-family: 'Teko', sans-serif;
-    font-size: clamp(1rem, 4vw, 1.15rem);
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
+    gap: 0;
     background: var(--surface);
-    color: var(--gold);
     border-top: 1px solid var(--border);
-    border-left: 1px solid var(--border);
+    font-family: 'Teko', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  #ui-bar > div {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 8px;
     border-right: 1px solid var(--border);
+    gap: 1px;
+  }
+  #ui-bar > div:last-child { border-right: none; }
+  .hud-label {
+    font-size: 0.55rem;
+    font-weight: 400;
+    color: var(--dim);
+    letter-spacing: 2px;
+  }
+  #hud-score { border-left: 3px solid var(--gold); }
+  #hud-score #score-display {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+  }
+  #hud-score #hud-score-label { font-size: 0.55rem; color: var(--dim); letter-spacing: 2px; }
+  #distance-display {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
+  }
+  #hi-display {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
   }
 
-  #ui-bar #score-display { color: var(--gold); }
-  #ui-bar #distance-display { color: var(--dim); font-size: 0.9em; }
-  #ui-bar #hi-display { color: var(--dim); font-size: 0.9em; }
+  /* Jump pip indicators — mobile only */
+  #mob-jumps {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .jump-pip {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--gold);
+    transition: background 0.1s, transform 0.1s;
+  }
+  .jump-pip.used {
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    transform: scale(0.8);
+  }
 
   /* ── INSTRUCTIONS (desktop only) ─────────────────────────────────────────── */
   #instructions {
     display: none;
-    text-align: center;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 7px 12px;
+    background: #000;
+    border-top: 1px solid var(--border);
+  }
+  @media (min-width: 601px) { #instructions { display: flex; } }
+  .inst-pill {
     font-family: 'Teko', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 400;
+    font-size: 0.8rem;
+    font-weight: 600;
     letter-spacing: 2px;
     text-transform: uppercase;
     color: var(--dim);
-    padding: 7px 12px 9px;
-    background: var(--surface);
+    padding: 3px 12px;
     border: 1px solid var(--border);
-    border-top: none;
-    line-height: 1.5;
+    border-radius: 20px;
   }
-  @media (min-width: 601px) { #instructions { display: block; } }
 
   /* ── MOBILE CONTROLS ─────────────────────────────────────────────────────── */
   #mobile-controls {
     display: none;
-    gap: 10px;
-    padding: 10px 12px 14px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-top: none;
+    gap: 12px;
+    padding: 10px 14px 14px;
+    background: #000;
+    border-top: 1px solid var(--border);
     align-items: center;
   }
   @media (max-width: 600px) { #mobile-controls { display: flex; } }
 
   #mobile-score {
     font-family: 'Teko', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 1.6rem;
+    font-weight: 700;
     letter-spacing: 2px;
     color: var(--gold);
-    min-width: 80px;
-    text-align: center;
+    line-height: 1;
   }
 
   #jump-btn {
@@ -156,25 +216,23 @@
     background: var(--gold);
     color: #111;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     font-family: 'Teko', sans-serif;
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    letter-spacing: 3px;
+    letter-spacing: 4px;
     text-transform: uppercase;
-    min-height: 58px;
+    min-height: 62px;
     cursor: pointer;
+    box-shadow: 0 4px 16px rgba(200,148,30,0.4);
     transition: background 0.08s, transform 0.06s;
   }
   #jump-btn:active { background: #fff; transform: scale(0.97); }
 
-  /* ── LEGACY CHAR SELECT (hidden) ─────────────────────────────────────────── */
-  #char-select { display: none; }
-
   /* ── GAME OVER OVERLAY ───────────────────────────────────────────────────── */
   #game-over {
     position: fixed; inset: 0;
-    background: #0a0a0aee;
+    background: #0a0a0a;
     display: none; flex-direction: column;
     align-items: center; justify-content: center;
     z-index: 50;
@@ -185,22 +243,92 @@
   #game-over h2 {
     font-family: 'Teko', sans-serif;
     font-weight: 700;
-    font-size: clamp(2.4rem, 12vw, 3.2rem);
+    font-size: clamp(2rem, 10vw, 2.6rem);
     letter-spacing: 6px;
     text-transform: uppercase;
     color: var(--red-sa);
     line-height: 1;
+    margin-bottom: 10px;
+  }
+
+  /* New best badge */
+  #go-new-best {
+    font-family: 'Teko', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #111;
+    background: var(--gold);
+    padding: 3px 14px;
+    border-radius: 20px;
     margin-bottom: 6px;
   }
 
-  .final-score {
+  /* Big campaign score */
+  #go-campaign-score {
     font-family: 'Teko', sans-serif;
-    font-size: clamp(1.4rem, 6vw, 1.8rem);
-    font-weight: 600;
-    letter-spacing: 3px;
-    text-transform: uppercase;
+    font-weight: 700;
+    font-size: clamp(3.5rem, 18vw, 5rem);
     color: var(--gold);
+    letter-spacing: 2px;
+    line-height: 1;
     margin-bottom: 2px;
+  }
+
+  .go-score-label {
+    font-family: 'Teko', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 20px;
+  }
+
+  /* Breakdown row */
+  #go-breakdown {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+    padding: 12px 24px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.04);
+  }
+
+  .go-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .go-stat-value {
+    font-family: 'Teko', sans-serif;
+    font-size: clamp(1.6rem, 7vw, 2.2rem);
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+
+  .go-stat-label {
+    font-family: 'Teko', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .go-stat-sep {
+    width: 1px;
+    height: 40px;
+    background: var(--border);
+    align-self: center;
+    margin: 0 4px;
   }
 
   .high-score {
@@ -212,6 +340,8 @@
     color: var(--dim);
     margin-bottom: 20px;
   }
+
+  .final-score { display: none; }
 
   /* Selected char/power reminder */
   #game-over-meta {
@@ -273,11 +403,12 @@
     width: 100%;
     max-width: 300px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 10px;
   }
-
-
+  #game-over-btns .btn {
+    flex: 1;
+  }
 
   /* ══ SELECT SCREEN OVERLAY — matches prototype exactly ══ */
   #rtv-select {
@@ -648,7 +779,6 @@
   </svg>
 </div>
 
-
 <!-- ══ SELECT SCREEN OVERLAY ══ -->
 <div id="rtv-select" class="active">
 <div id="screen">
@@ -703,33 +833,76 @@
 </div>
 
 <div id="game-container" style="display:none;">
-<div id="header">
-  <h1>Run The Votes</h1>
-</div>
+
+  <!-- HEADER -->
+  <div id="header">
+    <div id="header-title">Run The Votes</div>
+    <div id="header-char">—</div>
+  </div>
+
+  <!-- GAME CANVAS -->
   <canvas id="canvas" width="800" height="280"></canvas>
+
+  <!-- DESKTOP HUD BAR -->
   <div id="ui-bar">
-    <span id="score-display">🗳️ 0</span>
-    <span id="distance-display">⚡ NORMAL</span>
-    <span id="hi-display">BEST: 0</span>
+    <div id="hud-score">
+      <span id="hud-score-label">VOTES</span>
+      <span id="score-display">0</span>
+    </div>
+    <div id="hud-jumps">
+      <span class="hud-label">DISTANCE</span>
+      <span id="distance-display">0m</span>
+    </div>
+    <div id="hud-best">
+      <span class="hud-label">BEST</span>
+      <span id="hi-display">0</span>
+    </div>
   </div>
 
-  <div id="instructions">SPACE / ↑ to jump &nbsp;·&nbsp; Double-tap for double jump &nbsp;·&nbsp; Collect votes, dodge problems</div>
+  <!-- DESKTOP INSTRUCTIONS -->
+  <div id="instructions">
+    <span class="inst-pill">↑ &nbsp;JUMP</span>
+    <span class="inst-pill">↑↑ &nbsp;DOUBLE JUMP</span>
+    <span class="inst-pill">✕ &nbsp;DODGE OBSTACLES</span>
+    <span class="inst-pill">🗳️ &nbsp;COLLECT VOTES</span>
+  </div>
 
+  <!-- MOBILE CONTROLS -->
   <div id="mobile-controls">
-    <div id="mobile-score">VOTES: 0</div>
-    <button id="jump-btn">Jump</button>
+    <div id="mob-left">
+      <div id="mobile-score">0</div>
+      <div id="mob-jumps">
+        <div class="jump-pip" id="mob-pip-1"></div>
+        <div class="jump-pip" id="mob-pip-2"></div>
+      </div>
+    </div>
+    <button id="jump-btn">JUMP</button>
   </div>
-  <div id="char-select" style="display:none;">
-    <h2>CHOOSE YOUR CANDIDATE</h2>
-    <p>SELECT A POLITICIAN TO BEGIN THE CAMPAIGN</p>
-    <div class="char-grid" id="char-grid"></div>
-  </div>
+
 </div>
 
 <div id="game-over">
   <h2>Campaign Over</h2>
-  <div class="final-score" id="final-score">Votes Collected: 0</div>
-  <div class="high-score" id="hi-score-display">Best: 0</div>
+
+  <!-- Stats row: votes + distance -->
+  <div id="go-breakdown">
+    <div class="go-stat">
+      <span class="go-stat-value" id="final-score">0</span>
+      <span class="go-stat-label">🗳️ VOTES</span>
+    </div>
+    <div class="go-stat-sep"></div>
+    <div class="go-stat">
+      <span class="go-stat-value" id="final-distance">0m</span>
+      <span class="go-stat-label">📍 DISTANCE</span>
+    </div>
+  </div>
+
+  <!-- Total score -->
+  <div id="go-new-best" style="display:none;">NEW BEST</div>
+  <div id="go-campaign-score">0</div>
+  <div class="go-score-label">TOTAL SCORE</div>
+
+  <div class="high-score" id="hi-score-display">BEST: 0</div>
   <div id="game-over-meta">
     <div class="meta-pill" id="go-char">—</div>
     <div class="meta-pill" id="go-power">—</div>
@@ -1298,7 +1471,7 @@ let selectedChar = null;
 let selectedPower = null;
 let score = 0;
 let distance = 0;
-let highScore = parseInt(localStorage.getItem('voterunner_hi') || '0');
+let highScore = parseInt(localStorage.getItem('voterunner_best_campaign') || '0');
 let t = 0;
 let scrollX = 0;
 let gameSpeed = 3;
@@ -1320,8 +1493,6 @@ let loadsheddingFading = false;  // are we fading back in?
 const OBSTACLE_TYPES = ['pothole', 'taxi', 'loadshedding'];
 
 // ─── CHAR SELECT — drawn on canvas ───────────────────────────────────────────
-
-
 
 // ─── START / RESET ────────────────────────────────────────────────────────────
 function startGame(char, power) {
@@ -1354,6 +1525,17 @@ function startGame(char, power) {
   document.getElementById('rtv-select').classList.remove('active');
   document.getElementById('game-container').style.display = '';
   document.getElementById('game-over').style.display = 'none';
+  // Update header with character + power
+  const headerChar = document.getElementById('header-char');
+  if (headerChar && char) {
+    headerChar.textContent = char.name + ' · ' + (power ? power.name : '');
+    headerChar.style.color = char.color;
+  }
+  // Colour the score accent with character colour
+  const hudScore = document.getElementById('hud-score');
+  if (hudScore && char) hudScore.style.borderLeftColor = char.color;
+  const scoreEl = document.getElementById('score-display');
+  if (scoreEl && char) scoreEl.style.color = char.color;
 }
 
 // ─── JUMP ─────────────────────────────────────────────────────────────────────
@@ -1380,13 +1562,16 @@ function spawnParticles(x, y, color, count) {
 // ─── GAME OVER ────────────────────────────────────────────────────────────────
 function endGame() {
   state = 'gameover';
-  if (score > highScore) { highScore = score; localStorage.setItem('voterunner_hi', highScore); }
-  document.getElementById('final-score').textContent = `Votes Collected: ${score}`;
-  document.getElementById('hi-score-display').textContent = `Best: ${highScore}`;
-  // Populate meta pills
+  const campaignScore = (score * 10) + distance;
+  const isNewBest = campaignScore > highScore;
+  if (isNewBest) { highScore = campaignScore; localStorage.setItem('voterunner_best_campaign', highScore); }
+  document.getElementById('go-campaign-score').textContent = campaignScore.toLocaleString();
+  document.getElementById('go-new-best').style.display = isNewBest ? 'block' : 'none';
+  document.getElementById('final-score').textContent = score;
+  document.getElementById('final-distance').textContent = `${distance}m`;
+  document.getElementById('hi-score-display').textContent = highScore.toLocaleString();
   if (selectedChar) document.getElementById('go-char').textContent = selectedChar.name;
   if (selectedPower) document.getElementById('go-power').textContent = selectedPower.name;
-  // Style pills with character/power colour
   if (selectedChar) document.getElementById('go-char').style.borderColor = selectedChar.color;
   if (selectedPower) document.getElementById('go-power').style.borderColor = selectedPower.color;
   document.getElementById('game-over').style.display = 'flex';
@@ -1506,18 +1691,17 @@ function update() {
   particles = particles.filter(p => p.life > 0);
 
   // UI
-  document.getElementById('score-display').textContent = `🗳️ ${score}`;
-  const speedLabel = gameSpeed < 4 ? 'Normal' : gameSpeed < 6 ? 'Fast' : gameSpeed < 8 ? 'Turbo' : '🔥 Max';
-  document.getElementById('distance-display').textContent = `⚡ ${speedLabel}`;
-  document.getElementById('hi-display').textContent = `Best: ${highScore}`;
+  document.getElementById('score-display').textContent = score;
+  document.getElementById('distance-display').textContent = distance + 'm';
+  document.getElementById('hi-display').textContent = highScore > 0 ? highScore.toLocaleString() : '—';
   updateMobileScore();
+  updateJumpPips();
 }
 
 // ─── DRAW ─────────────────────────────────────────────────────────────────────
 function draw() {
   ctx.clearRect(0, 0, 800, 280);
   drawBackground(ctx, scrollX);
-
 
   if (state === 'playing' || state === 'gameover') {
     // Envelopes
@@ -1759,7 +1943,6 @@ function buildDots(count) {
   }
 }
 
-
 let powerIdx = 0;
 
 const powerBackdrop  = document.getElementById('power-backdrop');
@@ -1892,7 +2075,6 @@ buildDots(CHARACTERS.length);
 showChar(CHARACTERS[0], false);
 animate();
 
-
 // ─── SHOW SELECT SCREEN ──────────────────────────────────────────────────────
 function showSelectScreen() {
   document.getElementById('rtv-select').classList.add('active');
@@ -1930,15 +2112,22 @@ jumpBtn.addEventListener('touchstart', e => {
 }, { passive: false });
 jumpBtn.addEventListener('click', () => doJump());
 
-// Keep mobile score in sync
 function updateMobileScore() {
-  mobileScore.textContent = `VOTES: ${score}`;
+  mobileScore.textContent = score;
+}
+
+function updateJumpPips() {
+  const jumpsLeft = player.jumpsLeft;
+  // Mobile pips only
+  const mp1 = document.getElementById('mob-pip-1');
+  const mp2 = document.getElementById('mob-pip-2');
+  if (mp1) mp1.className = 'jump-pip' + (jumpsLeft < 2 ? ' used' : '');
+  if (mp2) mp2.className = 'jump-pip' + (jumpsLeft < 1 ? ' used' : '');
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 showSelectScreen();
 loop();
-
 
 </script>
 </body>
