@@ -747,6 +747,15 @@
     margin-bottom: 14px;
   }
   #rtv-select #power-stats { display: flex; flex-direction: column; gap: 5px; }
+  #rtv-select .power-desc-body {
+    font-family: 'Teko', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 400;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.5;
+    text-transform: none;
+  }
   #rtv-select #power-emoji-display {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 110px;
@@ -986,6 +995,24 @@ function drawPothole(ctx, x, groundY) {
   for (let i = 0; i < 5; i++) {
     ctx.fillStyle = i % 2 === 0 ? '#e74c3c' : '#f5c518';
     ctx.fillRect(px + i * 10, py - 5, 10, 4);
+  }
+  // Flashing orange warning light — centre top of pothole
+  const flash = Math.sin(t * 0.18) > 0;
+  if (flash) {
+    const lx = px + pw / 2, ly = py - 12;
+    // Glow
+    const glow = ctx.createRadialGradient(lx, ly, 0, lx, ly, 8);
+    glow.addColorStop(0,   'rgba(255,140,0,0.7)');
+    glow.addColorStop(1,   'rgba(255,140,0,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(lx, ly, 8, 0, Math.PI * 2);
+    ctx.fill();
+    // Solid dot
+    ctx.fillStyle = '#FF8C00';
+    ctx.beginPath();
+    ctx.arc(lx, ly, 3, 0, Math.PI * 2);
+    ctx.fill();
   }
   ctx.restore();
 }
@@ -1420,13 +1447,12 @@ function drawBackground(ctx, scrollX) {
   }
 }
 // ─── LOADSHEDDING DARKNESS OVERLAY ───────────────────────────────────────────
-function drawLoadsheddingOverlay(ctx, alpha, playerX, playerY) {
+function drawLoadsheddingOverlay(ctx, alpha, playerX, playerY, taxis = []) {
   if (alpha <= 0) return;
 
   const cx = playerX + 16, cy = playerY - 8;
   const visRadius = Math.round(110 + (1 - alpha) * 120);
 
-  // Draw the dark mask on an offscreen canvas, then composite onto game
   const offscreen = document.createElement('canvas');
   offscreen.width = 800;
   offscreen.height = 280;
@@ -1436,20 +1462,42 @@ function drawLoadsheddingOverlay(ctx, alpha, playerX, playerY) {
   oc.fillStyle = `rgba(0,0,0,${alpha * 0.95})`;
   oc.fillRect(0, 0, 800, 280);
 
-  // Punch a clear hole around the player using destination-out
-  // This erases the darkness — revealing transparency — not the game canvas
+  oc.globalCompositeOperation = 'destination-out';
+
+  // ── Player torch circle ───────────────────────────────────────────────────
   const hole = oc.createRadialGradient(cx, cy, 0, cx, cy, visRadius);
   hole.addColorStop(0,    'rgba(0,0,0,1)');
   hole.addColorStop(0.65, 'rgba(0,0,0,1)');
   hole.addColorStop(1,    'rgba(0,0,0,0)');
-  oc.globalCompositeOperation = 'destination-out';
   oc.fillStyle = hole;
   oc.beginPath();
   oc.arc(cx, cy, visRadius, 0, Math.PI * 2);
   oc.fill();
 
-  // Draw the offscreen dark mask (with hole) onto the game canvas
-  // The transparent hole area shows the game scene underneath
+  // ── Taxi headlight beam — single cone ────────────────────────────────────
+  taxis.forEach(taxi => {
+    const hx = taxi.x + 4;
+    const hy = GROUND_Y - taxi.h * 0.45;
+    const coneLength = 280;
+    const coneSpread = 90;
+
+    oc.save();
+    oc.beginPath();
+    oc.moveTo(hx, hy);
+    oc.lineTo(hx - coneLength, hy - coneSpread);
+    oc.lineTo(hx - coneLength, hy + coneSpread);
+    oc.closePath();
+    oc.clip();
+
+    const beam = oc.createRadialGradient(hx, hy, 0, hx, hy, coneLength);
+    beam.addColorStop(0,   'rgba(0,0,0,0.95)');
+    beam.addColorStop(0.4, 'rgba(0,0,0,0.85)');
+    beam.addColorStop(1,   'rgba(0,0,0,0)');
+    oc.fillStyle = beam;
+    oc.fillRect(hx - coneLength, hy - coneSpread, coneLength, coneSpread * 2);
+    oc.restore();
+  });
+
   ctx.drawImage(offscreen, 0, 0);
 
   // Flicker when first hitting
@@ -1498,12 +1546,11 @@ const OBSTACLE_TYPES = ['pothole', 'taxi', 'loadshedding'];
 function startGame(char, power) {
   selectedChar = char;
   selectedPower = power;
-  state = 'playing';
+  state = 'countdown';
   score = 0; distance = 0; scrollX = 0; gameSpeed = 3; t = 0;
   obstacles = []; votes = []; particles = [];
   nextObstacle = 120; nextVote = 60;
   player.y = GROUND_Y; player.vy = 0; player.jumping = false; player.jumpsLeft = 2;
-  // Reset all power stats
   player.voteRadius = 30;
   player.jumpHeight = 1.0;
   player.speedBoost = 1.0;
@@ -1511,7 +1558,6 @@ function startGame(char, power) {
   player.stateCaptureUsed = false;
   player.eskombribe = false;
   player.tenderMultiplier = 1;
-  // Apply selected power by effect name
   if (power) {
     switch(power.effect) {
       case 'envelopes': player.voteRadius = 80; break;
@@ -1525,17 +1571,79 @@ function startGame(char, power) {
   document.getElementById('rtv-select').classList.remove('active');
   document.getElementById('game-container').style.display = '';
   document.getElementById('game-over').style.display = 'none';
-  // Update header with character + power
   const headerChar = document.getElementById('header-char');
   if (headerChar && char) {
     headerChar.textContent = char.name + ' · ' + (power ? power.name : '');
     headerChar.style.color = char.color;
   }
-  // Colour the score accent with character colour
   const hudScore = document.getElementById('hud-score');
   if (hudScore && char) hudScore.style.borderLeftColor = char.color;
   const scoreEl = document.getElementById('score-display');
   if (scoreEl && char) scoreEl.style.color = char.color;
+
+  // Start countdown
+  countdownValue = 3;
+  countdownTimer = 0;
+}
+
+// ─── COUNTDOWN ────────────────────────────────────────────────────────────────
+let countdownValue = 0;
+let countdownTimer = 0;
+const COUNTDOWN_FRAMES = 50; // frames per number (~0.83s at 60fps)
+
+function updateCountdown() {
+  countdownTimer++;
+  if (countdownTimer >= COUNTDOWN_FRAMES) {
+    countdownTimer = 0;
+    countdownValue--;
+    if (countdownValue < 0) {
+      state = 'playing';
+    }
+  }
+}
+
+function drawCountdown(ctx) {
+  // Draw scene frozen
+  drawBackground(ctx, scrollX);
+
+  // Draw player inline
+  if (selectedChar) {
+    const pixels = selectedChar.getFrames(0);
+    drawPixelArt(ctx, pixels, player.x - 4, player.y - 28, 2);
+  }
+
+  // Dark scrim
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.fillRect(0, 0, 800, 280);
+
+  const charColor = selectedChar ? selectedChar.color : '#C8941E';
+  const progress = countdownTimer / COUNTDOWN_FRAMES;
+  // Scale: pops in large, shrinks slightly
+  const scale = 1.3 - (progress * 0.3);
+
+  ctx.save();
+  ctx.translate(400, 130);
+  ctx.scale(scale, scale);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  if (countdownValue > 0) {
+    // Number
+    ctx.font = 'bold 120px Teko, Arial';
+    ctx.fillStyle = charColor;
+    ctx.shadowColor = charColor;
+    ctx.shadowBlur = 30;
+    ctx.fillText(countdownValue, 0, 0);
+  } else {
+    // "VOTE FOR ME!"
+    ctx.font = 'bold 52px Teko, Arial';
+    ctx.fillStyle = '#C8941E';
+    ctx.shadowColor = '#C8941E';
+    ctx.shadowBlur = 30;
+    ctx.fillText('VOTE FOR ME!', 0, 0);
+  }
+
+  ctx.restore();
 }
 
 // ─── JUMP ─────────────────────────────────────────────────────────────────────
@@ -1731,7 +1839,25 @@ function draw() {
 
     // Loadshedding darkness overlay — drawn LAST so it covers everything
     if (loadsheddingAlpha > 0) {
-      drawLoadsheddingOverlay(ctx, loadsheddingAlpha, player.x, player.y);
+      drawLoadsheddingOverlay(ctx, loadsheddingAlpha, player.x, player.y, obstacles.filter(o => o.type === 'taxi'));
+
+      // Redraw pothole warning lights ON TOP of darkness so they're visible
+      obstacles.filter(o => o.type === 'pothole').forEach(ob => {
+        const flash = Math.sin(t * 0.18) > 0;
+        if (!flash) return;
+        const lx = ob.x + 25, ly = GROUND_Y - 12;
+        const glow = ctx.createRadialGradient(lx, ly, 0, lx, ly, 10);
+        glow.addColorStop(0,   'rgba(255,140,0,0.9)');
+        glow.addColorStop(1,   'rgba(255,140,0,0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(lx, ly, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#FF8C00';
+        ctx.beginPath();
+        ctx.arc(lx, ly, 3, 0, Math.PI * 2);
+        ctx.fill();
+      });
     }
 
     // Speed indicator (on top of darkness so still visible)
@@ -1782,7 +1908,17 @@ function draw() {
 }
 
 // ─── LOOP ─────────────────────────────────────────────────────────────────────
-function loop() { update(); draw(); requestAnimationFrame(loop); }
+function loop() {
+  if (state === 'countdown') {
+    updateCountdown();
+    ctx.clearRect(0, 0, 800, 280);
+    drawCountdown(ctx);
+  } else {
+    update();
+    draw();
+  }
+  requestAnimationFrame(loop);
+}
 
 // ─── PIXEL ART ────────────────────────────────────────────────────────────────
 
@@ -1965,7 +2101,7 @@ function showPower(power) {
     d.style.background = j === powerIdx ? power.color : 'rgba(255,255,255,0.2)';
   });
 
-  powerStatsEl.innerHTML = `<p style="font-family:'Teko',sans-serif;font-size:1.05rem;font-weight:400;letter-spacing:1px;color:rgba(255,255,255,0.7);line-height:1.5;text-transform:none;">${power.desc}</p>`;
+  powerStatsEl.innerHTML = `<p class="power-desc-body">${power.desc}</p>`;
 
   actionBtn.style.background = power.color;
   actionBtn.style.color = '#111';
