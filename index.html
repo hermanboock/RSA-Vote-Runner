@@ -40,7 +40,7 @@
     justify-content: center;
   }
 
-  /* ── RSA FLAG BACKGROUND ─────────────────────────────────────────────────────── */
+  /* ── FLAG BACKGROUND ─────────────────────────────────────────────────────── */
   #flag-bg {
     position: fixed;
     inset: 0;
@@ -1677,7 +1677,7 @@ function endGame() {
   document.getElementById('go-new-best').style.display = isNewBest ? 'block' : 'none';
   document.getElementById('final-score').textContent = score;
   document.getElementById('final-distance').textContent = `${distance}m`;
-  document.getElementById('hi-score-display').textContent = highScore.toLocaleString();
+  document.getElementById('hi-score-display').textContent = `Best Score: ${highScore.toLocaleString()}`;
   if (selectedChar) document.getElementById('go-char').textContent = selectedChar.name;
   if (selectedPower) document.getElementById('go-power').textContent = selectedPower.name;
   if (selectedChar) document.getElementById('go-char').style.borderColor = selectedChar.color;
