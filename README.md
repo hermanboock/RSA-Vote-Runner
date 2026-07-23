@@ -1,6 +1,6 @@
 # Run The Votes
 
-A South African political satire side-scrolling runner game. Pick a politician, choose your dirty trick, and run for your political life — dodging potholes, minibus taxis, and load shedding while collecting votes.
+A South African political satire side-scrolling runner game. Pick a politician, choose your dirty superpower, and run for your political life by dodging potholes, minibus taxis, and load shedding while collecting votes.
 
 **Live:** [hermanboock.github.io/RSA-Vote-Runner](https://hermanboock.github.io/RSA-Vote-Runner)
 
@@ -69,8 +69,8 @@ Your personal best is stored locally in the browser.
 
 Run The Votes is designed as more than a game. Anonymous character and power selection data, when aggregated over time, serves as a proxy for political sentiment:
 
-- **Character choice** reflects cultural resonance — who people find entertaining or relatable, which may differ significantly from actual voting intent
-- **Power choice** reflects political worldview — cynicism, distrust of institutions, or alignment with particular narratives
+- **Character choice** reflects cultural resonance, who people find entertaining or relatable, which may differ significantly from actual voting intent
+- **Power choice** reflects political worldview, cynicism, distrust of institutions, or alignment with particular narratives
 - **The combination** of character + power reveals nuanced perceptions that direct polling cannot easily capture
 
 Post-2026 election, aggregated gameplay data can be compared against actual results to measure the gap between cultural affinity and electoral trust.
