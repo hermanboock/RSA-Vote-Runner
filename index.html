@@ -40,7 +40,7 @@
     justify-content: center;
   }
 
-  /* ── RSA FLAG BACKGROUND ─────────────────────────────────────────────────────── */
+  /* ── FLAG BACKGROUND ─────────────────────────────────────────────────────── */
   #flag-bg {
     position: fixed;
     inset: 0;
@@ -680,6 +680,18 @@
   #rtv-select #back-btn.visible { display: block; }
   #rtv-select #back-btn:active { background: rgba(255,255,255,0.08); transform: scale(0.98); }
 
+  #rtv-select #disclaimer {
+    margin-top: 10px;
+    font-family: 'Teko', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    color: rgba(255,255,255,0.25);
+    text-align: center;
+    line-height: 1.5;
+    padding: 0 4px;
+  }
+
   /* ── POWER CARD (mirrors char-card structure) ──────────────────────────── */
   #rtv-select #power-card {
     display: none;
@@ -837,6 +849,7 @@
   <div id="bottom">
     <button id="action-btn" disabled>Select</button>
     <button id="back-btn">← Back</button>
+    <p id="disclaimer">Run The Votes is a satirical game for entertainment purposes only. All characters are fictional archetypes and do not represent real individuals or political parties. Not affiliated with or endorsed by any political party or electoral body. Not intended to influence voting behaviour or political opinion.</p>
   </div>
 </div>
 </div>
@@ -1954,28 +1967,28 @@ function getDAFrames(t) {
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 const CHARACTERS = [
   {
-    name:'CHIEF ANC', party:'AFRICAN NAT. CONGRESS',
+    name:'CHIEF MATA',   party:'',
     tagline:'POWER TO THE PEOPLE',
     color:'#2C8A3A', darkColor:'#1a5224',
     stats:{ Charisma:80, Promises:58, Scandals:70 },
     getFrames:getANCFrames
   },
   {
-    name:'CAPTAIN VF', party:'VRYHEIDSFRONT PLUS',
+    name:'CAPTAIN PIET', party:'',
     tagline:'RESTORE AND REBUILD',
     color:'#C8860A', darkColor:'#7a5006',
     stats:{ Charisma:70, Promises:95, Scandals:41 },
     getFrames:getVFFrames
   },
   {
-    name:'COMRADE EFF', party:'ECON. FREEDOM FIGHTERS',
+    name:'MORADE JULIAS',party:'',
     tagline:'SON OF THE SOIL',
     color:'#CC1A1A', darkColor:'#7a0f0f',
     stats:{ Charisma:63, Promises:71, Scandals:75 },
     getFrames:getEFFFrames
   },
   {
-    name:'LEADER DA', party:'DEMOCRATIC ALLIANCE',
+    name:'LEADER GORDAN',party:'',
     tagline:"LET'S GET RSA WORKING",
     color:'#1A5EA8', darkColor:'#0d3464',
     stats:{ Charisma:72, Promises:68, Scandals:66 },
@@ -2037,6 +2050,7 @@ function showChar(char, animate) {
   charName.textContent = char.name;
   charName.style.color = char.color;
   charParty.textContent = char.party;
+  charParty.style.display = char.party ? '' : 'none';
   charTagline.textContent = char.tagline;
 
   // Dot colour
